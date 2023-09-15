@@ -1,0 +1,103 @@
+<!DOCTYPE html><html lang="en"><head>
+        <title>Testing</title>
+        <link rel="stylesheet" href="./stylesheets/main.css">
+        <link rel="stylesheet" href="./stylesheets/jquery.mobile-1.4.3.min.css">
+        <script type="text/javascript" src="./javascripts/thirdparty/jquery-1.10.2.min.js"></script>
+        <script type="text/javascript" src="./javascripts/thirdparty/jquery.mobile-1.4.3.min.js"></script>
+        <script type="text/javascript" src="./javascripts/thirdparty/d3.min.js"></script>
+        <script type="text/javascript" src="./javascripts/cp.js"></script>
+        <script type="text/javascript" src="./javascripts/runner.js"></script>
+        <script type="text/javascript" src="./javascripts/extra.js"></script>
+        <script type="text/javascript" src="./javascripts/submit.js"></script>
+        <script type="text/javascript" src="./javascripts/design.js"></script>
+        <meta name="viewport" content="width=1280, user-scalable=no">
+    </head>
+    <body>
+        <!-- ################ Screen when Device is Not Landascape ################# -->
+        <div id="landscape">Rotate Device to Landscape</div>
+
+        <!-- ### Register Page Disabled -->
+        <!-- ################ Register/Login Interface ################# -->
+        <!-- <div id="regpage" data-role="page">
+            <div id="message"></div>
+            <div id="regframe">
+                <div id="title">ecoRacer </div>
+                <div id="subtitle">(v0.01)</div>
+                <div id="inputframe">
+                    <input id="username" type="text" value="username" name="username" onfocus="if(this.value=='username') {this.value='';}" onblur="if(this.value=='') {this.value='username';}">
+                    <input id="password" type="text" value="password" name="password" onfocus="this.type='password'; if(this.value=='password') {this.value='';}" onblur="if(this.value=='') {this.type='text';         this.value='password';}">
+                </div>
+                <div id="login" class="button">LOGIN</div>
+                <div id="register" class="button">REGISTER</div>
+            </div>
+        </div> -->
+
+        <!-- ################ Game Interface ################# -->
+        <div id="homepage" data-role="page">
+            <!-- ################ Initial Screen for Intro ################# -->
+            <div id="StartScreen">
+                <h1>EcoRacer</h1>
+                <h2>*** You only have 36 seconds to get out... ***</h2>
+                <h2>*** So beat other drivers by using LESS battery energy! ***</h2>
+                <h2>*** Tap to start ***</h2>
+                <div id="BrakeText">
+                    <h2>Your brake!</h2>
+                </div>
+                <div id="AccText">
+                    <h2>Your throttle!</h2>
+                </div>
+            </div>
+            <!-- ################ Driving Screen ################# -->
+            <div id="wrapper">
+                <div id="data">
+                    <div id="car_progress">
+                        <progress id="pbar" max="100" value="0"></progress>
+                    </div>
+                    <div id="battshape">
+                        <div id="battcap"></div>
+                        <div id="outer">
+                            <div id="battvalue" class="inner"></div>
+                        </div>
+                    </div>
+                    <div id="batttext" class="battcons"></div>
+                    <div id="mot1" class="motor1T"></div>
+                    <div id="mot2" class="motor2T"></div>
+                    <div id="speedval"></div>
+                    <div id="effval"></div>
+                    <div id="myscore"></div>
+                </div>
+                <canvas id="canvasbg"></canvas>
+                <canvas id="canvas1"></canvas>
+                <div id="brake-container">
+                    <div id="brake" class="round-button locked">B</div>
+                </div>
+                <div id="acc-container">
+                    <div id="acc" class="round-button locked">A</div>
+                </div>
+                <div id="timer"></div>
+                <div id="messagebox">
+                    <div id="textmessage"></div>
+                    <div id="ok">OK</div>
+                    <div id="restart">TRY AGAIN</div>
+                    <div id="review">STATS</div>
+                </div>
+                <div id="scorebox"></div>
+                <div id="history"></div>
+                <!-- ######## Design Screen Disabled ########## -->
+                <!-- ##### fr is set to 18 in extra.js ######## -->
+                <!--<div id="designbutton" class="round-button"></div>-->
+                <div id="resetbutton" class="round-button"></div>
+            </div>
+
+            <!-- ################ Design Screen ################# -->
+            <div id="design">
+                <div id="finaldrive">
+                    <div id="finaldrivetext"></div>
+                    <div id="canvas_gear"></div>
+                </div>
+                <div id="designed" class="round-button"></div>
+            </div>
+        </div>
+        <script type="text/javascript" src="./javascripts/main.js"></script>
+    </body>
+</html>
