@@ -82,7 +82,7 @@ function messagebox(msg, win){
 	$("#brake").removeClass("enabled");
 	$("#acc").removeClass("activated");
 	$("#brake").removeClass("activated");
-	$("#timer").hide();
+	$("#timeval").hide();
 	if(win){
 		$("#scorebox").show();
 		submitResult(consumption);
@@ -101,7 +101,6 @@ function messagebox(msg, win){
 
 // restart
 function restart(){
-	//$('#runner').runner('reset');
 	consumption = 0;
 	battstatus = 100;
 	start_race = 0;
@@ -115,7 +114,7 @@ function restart(){
 	$("#acc").addClass("enabled");
 	$("#messagebox").hide();
 	$("#scorebox").hide();
-	$("#timer").show();
+	$("#timeval").show();
 	demo.run();
 	counter = 0;
 	acc_keys = [];
@@ -642,33 +641,9 @@ function defineSpace(canvas_id, width, height) {
 
 
 /************************ UTILITIES **********************************************/
-function getNumberArray(arr){
-    var newArr = new Array();
-    for(var i = 0; i < arr.length; i++){
-        if(typeof arr[i] == "number"){
-            newArr[newArr.length] = arr[i];
-        }
-    }
-    return newArr;
-}
-
-function sign(x) { return x ? x < 0 ? -1 : 1 : 0; }
-
 function lockScroll()
 {
-     $(document).bind("touchmove",function(event){
-                        event.preventDefault();
-     });
-}
-
-var lastTapTime;
-function isJqmGhostClick(event) {
-    var currTapTime = new Date().getTime();
-    if(lastTapTime == null || currTapTime > (lastTapTime + 500)) {
-        lastTapTime = currTapTime;
-        return false;
-    }
-    else {
-        return true;
-    }
+	$(document).off("touchmove").on("touchmove",function(event){
+		event.preventDefault();
+	});
 }
