@@ -14,7 +14,7 @@
     </head>
     <body>
         <!-- ################ Screen when Device is Not Landascape ################# -->
-        <div id="landscape" class="center_panel portrait">
+        <div id="rotate_page" class="center_panel portrait">
             <h1>Rotate Device to Landscape</h1>
             <img src="images/landscape.png" alt="rotate device" style="height: 175px; width: 240px;" />
         </div>
@@ -35,35 +35,32 @@
             </div>
         </div> -->
 
+        <!-- ################ Initial Screen for Intro ################# -->
+        <div id="intro-screen" class="landscape hidden">
+            <h1>EcoRacer Game Intro</h1>
+            <h2>Objectives</h2>
+            <li>Finish track in under 36 seconds</li>
+            <li>Finish with maximum battery charge</li>
+            <h2>* Tap to start *</h2>
+        </div>
+
         <!-- ################ Game Interface ################# -->
-        <div id="homepage" data-role="page" class="landscape">
-            <!-- ################ Initial Screen for Intro ################# -->
-            <div id="intro-screen" class="center_panel">
-                <h1>EcoRacer</h1>
-                <h2>*** You only have 36 seconds to get out... ***</h2>
-                <h2>*** So beat other drivers by using LESS battery energy! ***</h2>
-                <h2>*** Tap to start ***</h2>
-            </div>
+        <div id="homepage" class="landscape hidden">
             <!-- ################ Driving Screen ################# -->
             <div id="driving-screen" style="position: fixed; width: 100%; height: 100%;">
                 <div id="brake-container" class="left_panel">
-                    <div>
-                        <div id="BrakeText">
-                            <h2>Your brake!</h2>
-                        </div>
-                        <div id="brake" class="round-button locked">B</div>
+                    <div id="BrakeText">
+                        <h2>Brake</h2>
                     </div>
+                    <div id="brake" class="round-button locked">B</div>
                 </div>
                 <div id="acc-container" class="right_panel">
-                    <div>
-                        <div id="AccText">
-                            <h2>Your throttle!</h2>
-                        </div>
-                        <div id="acc" class="round-button locked">A</div>
+                    <div id="AccText">
+                        <h2>Accelerate</h2>
                     </div>
+                    <div id="acc" class="round-button locked">A</div>
                 </div>
                 <div id="driving-info-bar" class="top_panel" >
-                    <progress id="pbar" max="100" value="0"></progress>
                     <div id="info-bar" class="flexrow">
                         <div class="flexrow">
                             <img src="images/gauge.svg" alt="speedgauge" class="status-icon" />
@@ -79,14 +76,18 @@
                         </div>
                         <!-- ######## Design Screen Disabled ########## -->
                         <!-- ##### fr is set to 18 in extra.js ######## -->
-                        <!--<div id="designbutton" class="round-button"></div>-->
-                        <button id="resetbutton" type="button" title="reset" class="round-button"></button>
-                        <!-- <div id="effval"></div> -->
-                        <!-- <div id="myscore"></div> -->
+                        <div class="flexrow">
+                            <!--<div id="designbutton" class="round-button"></div>-->
+                            <div id="resetbutton" class="round-button"></div>
+                            <span>Restart</span>
+                            <!-- <div id="effval"></div> -->
+                            <!-- <div id="myscore"></div> -->
+                        </div>
                     </div>
+                    <progress id="pbar" max="100" value="0"></progress>
                 </div>
-                        
-                <div id="wrapper" class="center_panel">
+                
+                <div id="wrapper" class="center_panel flexcol">
                     <canvas id="canvas1"></canvas>
                     <div id="history"></div>
                     <div id="messagebox">

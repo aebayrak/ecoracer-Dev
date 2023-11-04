@@ -24,7 +24,6 @@ function user(username, password) {
                 }, 1500);
                 U = null;
             } else {
-                $("body").pagecontainer("change", "#homepage");
                 d.id = response.id;
                 d.name = response.name;
                 d.bestscore = response.bestscore;
@@ -43,7 +42,6 @@ function user(username, password) {
                 } else {
                     $("#myscore").html("My Best Score: --%");
                 }
-                drawLandscape();
             }
         },
     );
@@ -62,9 +60,6 @@ var scene = function () {
     this.addFloor(data, scene_widthx, xstep);
     this.addTerminal(scene_widthx - 3 * xstep);
     //for (var i=0; i<stationPosX.length; i++){this.addStation(stationPosX[i],0);}
-
-    $("#canvasbg")[0].width = scene_width;
-    $("#canvasbg")[0].height = 40;
 
     var addBar = function (pos) {
         var mass = 1 / m2m; // 1kg
@@ -375,36 +370,41 @@ demo.run();
 var acc_keys = [];
 var brake_keys = [];
 
+function ChangePage( pageID ){
+    document.querySelectorAll('body > div').forEach( screen => {
+        console.log(screen);
+        if( screen.id === 'rotate_page'){
+            // leave this visible at all times and let CSS hide on device rotation.
+        }
+        else if( screen.id === pageID ){
+            screen.classList.remove('hidden');
+        }else{
+            screen.classList.add('hidden');
+        }
+    });
+}
+
+function DrawLandscape() {
+    // draw the landscape
+    var canvas = document.getElementById("canvasbg");
+    var canvas_x = canvas.width;
+    var canvas_y = canvas.height-1;
+    var ctx = canvas.getContext("2d");
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(0,0,0, 1)";
+    ctx.beginPath();
+    ctx.moveTo(0, canvas_y);
+    for (var i = 1; i < data.length; i++) {
+        let next_x = canvas_x * (i / data.length);
+        let next_y = canvas_y - (canvas_y * (data[i]/100));
+        ctx.lineTo( next_x, next_y);
+    }
+    ctx.stroke();
+    ctx.closePath();
+};
+
 // script to run at document.ready()
 $(function () {
-    // if($.isEmptyObject(U)){
-    // 	$( "body" ).pagecontainer( "change", "#homepage" ); // #regpage or #homepage
-    // }
-
-    // $.post("/getBestUser", {}, function(response){
-    // 	if(response.length==1){
-    // 		$("#title").html('EcoRacer (current winner: '+response[0]+')' );
-    // 	}
-    // });
-
-    drawLandscape = function () {
-        // draw the landscape
-        var canvas = document.getElementById("canvasbg");
-        var ctx = canvas.getContext("2d");
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "rgba(0,0,0, 1)";
-        ctx.beginPath();
-        ctx.moveTo(0, 39);
-        for (var i = 1; i < data.length; i++) {
-            ctx.lineTo(
-                (i / (data.length - 1)) * scene_width,
-                39 - (data[i] / 100) * 39,
-            );
-        }
-        ctx.stroke();
-        ctx.closePath();
-    };
-
     $("#register").on("tap click", function (event) {
         event.preventDefault();
         if (
@@ -443,27 +443,46 @@ $(function () {
             }, 1500);
         }
     });
-    $(document).on("keypress", function (e) {
-        if (!U) {
-            // if on login page
-            if (e.which == 13) {
-                // log in
-                if (
-                    $("#username")[0].value != "username" &&
-                    $("#username")[0].value != ""
-                ) {
-                    U = new user(
-                        $("#username")[0].value,
-                        $("#password")[0].value,
-                    );
-                } else {
-                    $("#message").html("Username cannot be empty...");
-                    setTimeout(function () {
-                        $("#message").html("");
-                        showRobots();
-                    }, 1500);
-                }
-            }
+    
+    $(document).on("keydown", function (e) {
+        console.log(e);
+        switch(e.key)
+        {
+            case "ArrowLeft":
+                $("#brake").trigger('touchstart');
+                break;
+            case "ArrowDown":
+                $("#brake").trigger('touchstart');
+                break;
+            case "ArrowUp":
+                $("#acc").trigger('touchstart');
+                break;
+            case "ArrowRight":
+                $("#acc").trigger('touchstart');
+                break;
+            case "Enter":
+                break;
+        }
+    });
+
+    $(document).on("keyup", function (e) {
+        console.log(e);
+        switch(e.key)
+        {
+            case "ArrowLeft":
+                $("#brake").trigger('touchend');
+                break;
+            case "ArrowDown":
+                $("#brake").trigger('touchend');
+                break;
+            case "ArrowUp":
+                $("#acc").trigger('touchend');
+                break;
+            case "ArrowRight":
+                $("#acc").trigger('touchend');
+                break;
+            case "Enter":
+                break;
         }
     });
 
@@ -560,22 +579,18 @@ $(function () {
 
     $("#intro-screen").on("tap click", function (event) {
         event.preventDefault();
-        if ($(window).width() > $(window).height()) {
-            $("#intro-screen").hide(500, function () {
-                $("#brake").removeClass("locked");
-                $("#acc").removeClass("locked");
-                tap_start = 1;
-                start_race = 1;
-                wheel1moment = Jw1;
-                wheel2moment = Jw2;
-                wheel1.setMoment(wheel1moment);
-                wheel2.setMoment(wheel2moment);
-                getBestScore();
-            });
-        } else {
-            $("#landscape").show();
-            lockScroll();
-        }
+        $("#intro-screen").hide(500, function () {
+            $("#brake").removeClass("locked");
+            $("#acc").removeClass("locked");
+            tap_start = 1;
+            start_race = 1;
+            wheel1moment = Jw1;
+            wheel2moment = Jw2;
+            wheel1.setMoment(wheel1moment);
+            wheel2.setMoment(wheel2moment);
+            getBestScore();
+            ChangePage( "homepage" );
+        });
     });
 
     $("#designbutton").on("tap click", function () {
@@ -590,7 +605,8 @@ $(function () {
         $("#canvas_gear").empty();
         restart();
     });
-});
 
-// demo.canvas.style.position = "absolute";
-// demo.canvas.style.left = "0px";
+    DrawLandscape();
+
+    ChangePage( "intro-screen" );
+});

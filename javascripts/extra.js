@@ -130,7 +130,6 @@ function restart(){
 	$("#history").html("");
 	var pBar = document.getElementById("pbar");
 	pBar.value = 0;
-	drawLandscape();
 	$.post('/getUser', {'username':this.username, 'password':this.password}, function(response){
 		U.bestscore = response.bestscore;
 		$("#myscore").html("My Best Score: "+ Math.round(1000-(U.bestscore/3600/1000/max_batt*1000))/10 + "%");

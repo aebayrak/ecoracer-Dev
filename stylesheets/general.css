@@ -19,32 +19,37 @@
 	position: absolute;
 	top: 0;
 	left: 15%;
-	height: 10%;
+	height: 20%;
 	width: 70%;
 }
 .center_panel {
 	position: absolute;
-	top: 10%;
+	top: 20%;
 	left: 15%;
-	height: 75%;
+	height: 60%;
 	width: 70%;
 }
 .bottom_panel {
 	position: absolute;
 	bottom: 0;
 	left: 15%;
-	height: 15%;
+	height: 20%;
 	width: 70%;
 }
 
 /* UI types buttons */
 
 .round-button {
-    /* display:block; */
-    /* width:80px; */
-    /* height:80px; */
-    border: 20px solid #222222;
+    display:block;
+    width:40px;
+    height:40px;
+    border: 5px solid #222222;
     border-radius: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: scroll;
+    background-size: 70%;
+    /* background-clip: content-box; */
     text-align:center;
     /* text-decoration:none; */
     font-size:80px;
@@ -97,20 +102,17 @@ h2 {
 }
 
 /* display/hide based on screen orientation */
+.hidden {
+	display: none;
+}
 
 @media screen and (orientation: portrait)  {
 	.landscape {
 		display: none;
 	}
-	.portrait {
-		display: unset;
-	}
 }
 
 @media screen and (orientation: landscape)  {
-	.landscape {
-		display: unset;
-	}
 	.portrait {
 		display: none;
 	}
