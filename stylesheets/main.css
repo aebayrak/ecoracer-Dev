@@ -22,7 +22,7 @@
 
 /************************ general **********************************************/
 
-#intro-screen {
+#intro-page {
     position: absolute;
     width: 90%;
     height: 90%;
@@ -187,7 +187,7 @@ path {
 	background-image: url("../images/restart.png");
 }
 
-#design{
+#design-page{
 	position: absolute;
 	width:100%;
 	height:100%;

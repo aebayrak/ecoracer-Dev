@@ -371,15 +371,15 @@ var acc_keys = [];
 var brake_keys = [];
 
 function ChangePage( pageID ){
-    document.querySelectorAll('body > div').forEach( screen => {
-        console.log(screen);
-        if( screen.id === 'rotate_page'){
+    document.querySelectorAll('body > div').forEach( page => {
+        // console.log(page);
+        if( page.id === 'rotate-page'){
             // leave this visible at all times and let CSS hide on device rotation.
         }
-        else if( screen.id === pageID ){
-            screen.classList.remove('hidden');
+        else if( page.id === pageID ){
+            page.classList.remove('hidden');
         }else{
-            screen.classList.add('hidden');
+            page.classList.add('hidden');
         }
     });
 }
@@ -445,7 +445,6 @@ $(function () {
     });
     
     $(document).on("keydown", function (e) {
-        console.log(e);
         switch(e.key)
         {
             case "ArrowLeft":
@@ -466,7 +465,6 @@ $(function () {
     });
 
     $(document).on("keyup", function (e) {
-        console.log(e);
         switch(e.key)
         {
             case "ArrowLeft":
@@ -577,9 +575,9 @@ $(function () {
         $("#history").hide();
     });
 
-    $("#intro-screen").on("tap click", function (event) {
+    $("#intro-page").on("tap click", function (event) {
         event.preventDefault();
-        $("#intro-screen").hide(500, function () {
+        $("#intro-page").hide(500, function () {
             $("#brake").removeClass("locked");
             $("#acc").removeClass("locked");
             tap_start = 1;
@@ -589,24 +587,24 @@ $(function () {
             wheel1.setMoment(wheel1moment);
             wheel2.setMoment(wheel2moment);
             getBestScore();
-            ChangePage( "homepage" );
+            ChangePage( "home-page" );
         });
     });
 
     $("#designbutton").on("tap click", function () {
-        $("#design").show();
+        $("#design-page").show();
         initialize_design();
     });
     $("#resetbutton").on("tap click", function (event) {
         restart();
     });
     $("#designed").on("tap click", function () {
-        $("#design").hide();
+        $("#design-page").hide();
         $("#canvas_gear").empty();
         restart();
     });
 
     DrawLandscape();
 
-    ChangePage( "intro-screen" );
+    ChangePage( "intro-page" );
 });
