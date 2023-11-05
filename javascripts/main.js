@@ -387,20 +387,27 @@ function ChangePage( pageID ){
 function DrawLandscape() {
     // draw the landscape
     var canvas = document.getElementById("canvasbg");
-    var canvas_x = canvas.width;
-    var canvas_y = canvas.height-1;
+    // setup the canvas number of pixels to something large so it scales without much pixelation when CSS scaling is done.
+    canvas.width = 2000;
+    canvas.height = 100;
+    // don't draw to the edges of the canvas, use a virtual border
+    const BORDER = 5;
+    let MIN_X = BORDER, MAX_X = canvas.width - BORDER;
+    let MIN_Y = BORDER, MAX_Y = canvas.height - BORDER;
+    var x_scale = MAX_X - MIN_X;
+    var y_scale = MAX_Y - MIN_Y;
     var ctx = canvas.getContext("2d");
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
     ctx.strokeStyle = "rgba(0,0,0, 1)";
     ctx.beginPath();
-    ctx.moveTo(0, canvas_y);
+    ctx.moveTo(MIN_X, MAX_Y);
     for (var i = 1; i < data.length; i++) {
-        let next_x = canvas_x * (i / data.length);
-        let next_y = canvas_y - (canvas_y * (data[i]/100));
+        let next_x = MIN_X + (x_scale * (i / data.length));
+        let next_y = MAX_Y - (y_scale * (data[i]/100));
         ctx.lineTo( next_x, next_y);
     }
     ctx.stroke();
-    ctx.closePath();
 };
 
 // script to run at document.ready()
