@@ -1,0 +1,67 @@
+// import Scene from "./game-physics";
+import demo from "./main.js";
+
+let ctx, canvas, elevationPoints, position;
+
+const render = function( timestamp ) {
+    // update canvas only when the position changed sufficiently
+    if( Math.round(position) !== Math.round(demo.chassis.p.x )){
+        position = demo.chassis.p.x;
+
+        // wipe canvas clean
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+
+        // don't draw to the edges of the canvas, use a virtual border
+        const BORDER = 5;
+        let MIN_X = BORDER, MAX_X = canvas.width - BORDER;
+        let MIN_Y = BORDER, MAX_Y = canvas.height - BORDER;
+        var x_scale = MAX_X - MIN_X;
+        var y_scale = MAX_Y - MIN_Y;
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+
+        // draw track in black
+        ctx.strokeStyle = "rgba(0,0,0, 1)";
+        ctx.beginPath();
+        ctx.moveTo(MIN_X, MAX_Y);
+        for (var i = 1; i < elevationPoints.length; i++) {
+            let next_x = MIN_X + (x_scale * (i / elevationPoints.length));
+            let next_y = MAX_Y - (y_scale * (elevationPoints[i]/100));
+            ctx.lineTo( next_x, next_y);
+        }
+        ctx.stroke();
+
+        // red to show the finish line
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(255,0,0, 1)";
+        let x_pos = MIN_X + (x_scale * (18000/scene_widthx));
+        ctx.moveTo(x_pos, MIN_Y);
+        ctx.lineTo(x_pos, MAX_Y);
+        ctx.stroke();
+        
+        // blue to show the current position
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(0,0,255, 1)";
+        x_pos = MIN_X + (x_scale * (position/scene_widthx));
+        ctx.moveTo(x_pos, MIN_Y);
+        ctx.lineTo(x_pos, MAX_Y);
+        ctx.stroke();
+    }
+    
+    requestAnimationFrame(render);
+}
+
+// draw the landscape
+export const DrawLandscape = function (id, data) {
+    canvas = document.getElementById(id);
+    ctx = canvas.getContext("2d");
+    // setup the canvas number of pixels to something large so it scales without much pixelation when CSS scaling is done.
+    canvas.width = 2000;
+    canvas.height = 100;
+
+    elevationPoints = data;
+    requestAnimationFrame(render);
+}
+
+
+export default DrawLandscape;

@@ -1,18 +1,21 @@
 /************************ GAME **********************************************/
 #canvas1 {
-	position: relative;
+	position: absolute;
 	width: 100%;
 	height: 90%;
 	top: 0px;
+	left: 0px;
 	transition: all 2s;
+	z-index: 4;
 }
 
 #canvasbg {
-	position: relative;
+	position: absolute;
 	width: 100%;
 	height: 90%;
 	top: 0px;
-    z-index:1;
+	left: 0px;
+    z-index: 4;
 }
 
 /* Top panel components */

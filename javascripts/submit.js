@@ -1,5 +1,12 @@
 var max_batt = 0.55; // Change this value
 
+const UserData = {
+	username: "",
+	password: "",
+	acc_keys: [],
+	brake_keys: []
+}
+
 function submitResult(c){
 	// get date
 	var date = new Date();
@@ -36,9 +43,9 @@ function submitResult(c){
 			}
 
 			// post results
-			$.post('/adddata',{'userid':U.id,
+			$.post('/adddata',{'userid':UserData.id,
 							   'score':c,
-							   'keys':JSON.stringify({'acc':acc_keys,'brake':brake_keys}),
+							   'keys':JSON.stringify({'acc':UserData.acc_keys,'brake':UserData.brake_keys}),
 		   					   'finaldrive':fr,
 		   					   'ranking_percentage': ranking_percentage, 
 		   					   'ranking_scoreboard': ranking_scoreboard});	
@@ -55,9 +62,9 @@ function submitResult(c){
 			}
 		}
 		// post results
-		$.post('/adddata',{'userid':U.id,
+		$.post('/adddata',{'userid':UserData.id,
 						   'score':c,
-						   'keys':JSON.stringify({'acc':acc_keys,'brake':brake_keys}),
+						   'keys':JSON.stringify({'acc':UserData.acc_keys,'brake':UserData.brake_keys}),
 	   					   'finaldrive':fr,
 	   					   'ranking_percentage': ranking_percentage, 
 	   					   'ranking_scoreboard': ranking_scoreboard});	
