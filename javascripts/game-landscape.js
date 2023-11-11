@@ -1,16 +1,14 @@
-// import Scene from "./game-physics";
 import demo from "./main.js";
 
 let ctx, canvas, elevationPoints, position;
 
 const render = function( timestamp ) {
     // update canvas only when the position changed sufficiently
-    if( Math.round(position) !== Math.round(demo.chassis.p.x )){
-        position = demo.chassis.p.x;
-
+    if( Math.round(position) !== Math.round(demo.player.XPosition())){
+        
         // wipe canvas clean
         ctx.clearRect(0,0,canvas.width, canvas.height);
-
+        
         // don't draw to the edges of the canvas, use a virtual border
         const BORDER = 5;
         let MIN_X = BORDER, MAX_X = canvas.width - BORDER;
@@ -21,7 +19,7 @@ const render = function( timestamp ) {
         ctx.lineCap = "round";
 
         // draw track in black
-        ctx.strokeStyle = "rgba(0,0,0, 1)";
+        ctx.strokeStyle = "black";
         ctx.beginPath();
         ctx.moveTo(MIN_X, MAX_Y);
         for (var i = 1; i < elevationPoints.length; i++) {
@@ -30,18 +28,28 @@ const render = function( timestamp ) {
             ctx.lineTo( next_x, next_y);
         }
         ctx.stroke();
-
+        
         // red to show the finish line
         ctx.beginPath();
-        ctx.strokeStyle = "rgba(255,0,0, 1)";
-        let x_pos = MIN_X + (x_scale * (18000/scene_widthx));
+        ctx.strokeStyle = "red";
+        let x_pos = MIN_X + (x_scale * (18100/scene_widthx));
         ctx.moveTo(x_pos, MIN_Y);
         ctx.lineTo(x_pos, MAX_Y);
         ctx.stroke();
         
-        // blue to show the current position
+        // show the player position
         ctx.beginPath();
-        ctx.strokeStyle = "rgba(0,0,255, 1)";
+        position = demo.player.XPosition();
+        ctx.strokeStyle = demo.player.color;
+        x_pos = MIN_X + (x_scale * (position/scene_widthx));
+        ctx.moveTo(x_pos, MIN_Y);
+        ctx.lineTo(x_pos, MAX_Y);
+        ctx.stroke();
+
+        // show the AI position
+        ctx.beginPath();
+        position = demo.ai.XPosition();
+        ctx.strokeStyle = demo.ai.color;
         x_pos = MIN_X + (x_scale * (position/scene_widthx));
         ctx.moveTo(x_pos, MIN_Y);
         ctx.lineTo(x_pos, MAX_Y);
@@ -51,7 +59,7 @@ const render = function( timestamp ) {
     requestAnimationFrame(render);
 }
 
-// draw the landscape
+// draw the landscape (mini map of the whole track with some markers for each player position)
 export const DrawLandscape = function (id, data) {
     canvas = document.getElementById(id);
     ctx = canvas.getContext("2d");

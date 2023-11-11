@@ -7,7 +7,7 @@
         <script type="text/javascript" src="./javascripts/thirdparty/d3.min.js"></script>
         <script type="text/javascript" src="./javascripts/thirdparty/jquery-3.7.1.js"></script>
         <script defer src="./javascripts/extra.js"></script>
-        <script defer src="./javascripts/submit.js"></script>
+        <script type="module" src="./javascripts/submit.js"></script>
         <script defer src="./javascripts/design.js"></script>
         <script type="module" src="./javascripts/game-landscape.js"></script>
         <script type="module" src="./javascripts/game-physics.js"></script>
@@ -75,6 +75,7 @@
                         <div class="flexrow">
                             <img src="images/battery-bolt.svg" alt="battery" class="status-icon" />
                             <span id="battval"></span>
+                            <span id="effval"></span>
                         </div>
                         <!-- ######## Design Screen Disabled ########## -->
                         <!-- ##### fr is set to 18 in extra.js ######## -->
@@ -82,7 +83,6 @@
                             <!--<div id="designbutton" class="round-button"></div>-->
                             <div id="resetbutton" class="round-button"></div>
                             <span>Restart</span>
-                            <!-- <div id="effval"></div> -->
                             <!-- <div id="myscore"></div> -->
                         </div>
                     </div>

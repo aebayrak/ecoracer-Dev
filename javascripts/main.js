@@ -1,5 +1,7 @@
-import DrawLandscape from './game-landscape.js'
-import Scene from './game-physics.js';
+import { DrawLandscape } from './game-landscape.js'
+import { Scene } from './game-physics.js';
+import { Players } from './player.js';
+import * as submit from './submit.js'
 
 var scene_width = $(window).width();
 var scene_height = $(window).height();
@@ -28,13 +30,13 @@ function user(username, password) {
                 if (d.bestscore > 0) {
                     $("#myscore").html(
                         "My Best Score: " +
-                            Math.round(
-                                1000 -
-                                    (d.bestscore / 3600 / 1000 / max_batt) *
-                                        1000,
-                            ) /
-                                10 +
-                            "%",
+                        Math.round(
+                            1000 -
+                            (d.bestscore / 3600 / 1000 / max_batt) *
+                            1000,
+                        ) /
+                        10 +
+                        "%",
                     );
                 } else {
                     $("#myscore").html("My Best Score: --%");
@@ -51,15 +53,15 @@ export var demo = new Scene("canvas1", scene_width, scene_heightx);
 export default demo;
 demo.run();
 
-function ChangePage( pageID ){
-    document.querySelectorAll('body > div').forEach( page => {
+function ChangePage(pageID) {
+    document.querySelectorAll('body > div').forEach(page => {
         // console.log(page);
-        if( page.id === 'rotate-page'){
+        if (page.id === 'rotate-page') {
             // leave this visible at all times and let CSS hide on device rotation.
         }
-        else if( page.id === pageID ){
+        else if (page.id === pageID) {
             page.classList.remove('hidden');
-        }else{
+        } else {
             page.classList.add('hidden');
         }
     });
@@ -67,37 +69,40 @@ function ChangePage( pageID ){
 
 // restart
 function restart() {
-	consumption = 0;
-	battstatus = 100;
-	start_race = 0;
-	demo.stop();
-	demo = new Scene("canvas1", scene_width, scene_heightx);
+    // consumption = 0;
+    // battstatus = 100;
+    start_race = 0;
+    demo.stop();
+    demo = new Scene("canvas1", scene_width, scene_heightx);
     demo.reset();
-	$("#brake").addClass("enabled");
-	$("#acc").addClass("enabled");
-	$("#messagebox").hide();
-	$("#scorebox").hide();
-	$("#timeval").show();
-	$("#history").html("");
-	demo.run();
-	counter = 0;
-	UserData.acc_keys = [];
-	UserData.brake_keys = [];
-	getBestScore();
-	historyDrawn = false;
-	save_x = [];
-	save_v = [];
-	save_eff = [];
-	vehSpeed = 0;
-	motor2eff = 0;
-	car_posOld = 0;
-	document.getElementById("pbar").value = 0;
-	$.post('/getUser', { 'username': UserData.username, 'password': UserData.password }, function (response) {
-		UserData.bestscore = response.bestscore;
-		$("#myscore").html("My Best Score: " + Math.round(1000 - (UserData.bestscore / 3600 / 1000 / max_batt * 1000)) / 10 + "%");
-	});
+    $("#brake").addClass("enabled");
+    $("#acc").addClass("enabled");
+    $("#messagebox").hide();
+    $("#scorebox").hide();
+    $("#timeval").show();
+    $("#history").html("");
+    demo.run();
+    counter = 0;
+    // UserData.acc_keys = [];
+    // UserData.brake_keys = [];
+    submit.getBestScore();
+    historyDrawn = false;
+    // save_x = [];
+    // save_v = [];
+    // save_eff = [];
+    // vehSpeed = 0;
+    // motor2eff = 0;
+    // car_posOld = 0;
+    // document.getElementById("pbar").value = 0;
+    let playerData = demo.player.serverData;
+    $.post('/getUser', { 'username': playerData.credentials.username, 'password': playerData.credentials.password }, function (response) {
+        playerData.bestscore = response.bestscore;
+        $("#myscore").html("My Best Score: " + Math.round(1000 - (UserData.bestscore / 3600 / 1000 / max_batt * 1000)) / 10 + "%");
+    });
     DrawLandscape('canvasbg', data);
 };
+
+var player = Players.HUMAN;
 
 // script to run at document.ready()
 $(function () {
@@ -139,10 +144,9 @@ $(function () {
             }, 1500);
         }
     });
-    
+
     $(document).on("keydown", function (e) {
-        switch(e.key)
-        {
+        switch (e.key) {
             case "ArrowLeft":
                 $("#brake").trigger('touchstart');
                 break;
@@ -161,8 +165,7 @@ $(function () {
     });
 
     $(document).on("keyup", function (e) {
-        switch(e.key)
-        {
+        switch (e.key) {
             case "ArrowLeft":
                 $("#brake").trigger('touchend');
                 break;
@@ -184,24 +187,15 @@ $(function () {
     $("#brake").on("touchstart mousedown", function (event) {
         event.preventDefault();
         if ($("#brake").hasClass("enabled")) {
-            brake_sig = true;
             $("#brake").addClass("activated");
-            if (Math.round(demo.chassis.p.x) != UserData.brake_keys[UserData.brake_keys.length - 1]) {
-                UserData.brake_keys.push(Math.round(demo.chassis.p.x));
-            }
+            player.PressBrake();
         }
     });
     $("#brake").on("touchend mouseup", function (event) {
         event.preventDefault();
         if ($("#brake").hasClass("enabled")) {
-            brake_sig = false;
             $("#brake").removeClass("activated");
-            demo.brake();
-            brake_sig = false;
-            acc_sig = false;
-            if (Math.round(demo.chassis.p.x) != UserData.brake_keys[UserData.brake_keys.length - 1]) {
-                UserData.brake_keys.push(Math.round(demo.chassis.p.x));
-            }
+            player.ReleaseBrake();
         }
     });
 
@@ -209,25 +203,16 @@ $(function () {
     $("#acc").on("touchstart mousedown", function (event) {
         event.preventDefault();
         if ($("#acc").hasClass("enabled")) {
-            acc_sig = true;
-            start_race = tap_start;
             $("#acc").addClass("activated");
-            if (Math.round(demo.chassis.p.x) != UserData.acc_keys[UserData.acc_keys.length - 1]) {
-                UserData.acc_keys.push(Math.round(demo.chassis.p.x));
-            }
+            start_race = tap_start;
+            player.PressAccelerator();
         }
     });
     $("#acc").on("touchend mouseup", function (event) {
         event.preventDefault();
         if ($("#acc").hasClass("enabled")) {
-            acc_sig = false;
             $("#acc").removeClass("activated");
-            demo.accelerate();
-            brake_sig = false;
-            acc_sig = false;
-            if (Math.round(demo.chassis.p.x) != UserData.acc_keys[UserData.acc_keys.length - 1]) {
-                UserData.acc_keys.push(Math.round(demo.chassis.p.x));
-            }
+            player.ReleaseAccelerator();
         }
     });
     $("#ok").on("tap click", function (event) {
@@ -247,7 +232,7 @@ $(function () {
     $("#review").on("tap click", function (event) {
         event.preventDefault();
         if (!historyDrawn) {
-            drawHistory();
+            submit.drawHistory();
             historyDrawn = true;
         }
         $("#history").show();
@@ -262,9 +247,9 @@ $(function () {
         $("#intro-page").hide(500, function () {
             $("#brake").removeClass("locked");
             $("#acc").removeClass("locked");
-            getBestScore();
+            submit.getBestScore();
             demo.reset();
-            ChangePage( "home-page" );
+            ChangePage("home-page");
         });
     });
 
@@ -283,5 +268,5 @@ $(function () {
 
     DrawLandscape('canvasbg', data);
 
-    ChangePage( "intro-page" );
+    ChangePage("intro-page");
 });

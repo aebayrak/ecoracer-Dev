@@ -1,34 +1,18 @@
 /************************ GAME INTERFACE **********************************************/
-var DISPLACEMENT = 0;
-var MARGIN = 175;
-
-var GRABABLE_MASK_BIT = 1 << 31;
-var NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
-var scene_widthx = 18800; // ???m
-var scene_heightx = 280;
+const GRABABLE_MASK_BIT = 1 << 31;
+const NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
+const scene_widthx = 18800; // ???m
+const scene_heightx = 280;
 var started = false;
 var historyDrawn = false;
 
-var motor2eff = 0;
-
-var acc_sig = false;
-var brake_sig = false;
-
-//************************************************///
-var vehSpeed = 0;
-var save_x = [];
-var save_v = [];
-var save_eff = [];
-var car_posOld = 0;
-//**************************************************///
-
-var fric = 2.8;
-var timeout = 36; // 30s
-var max_batt = 0.55; // Change this value
+const fric = 2.8;
+const timeout = 36; // 30s
+const max_batt = 0.55; // Change this value
 var tstart = 0; // game starts after 5 sec
 var indx = 0;
 //var data = [00,00,10,20,30,40,50,60,70,80,90,90,90,45,00,00,00,00,00,00,05,10,20,40,60,80,90,90,90,90,45,00,00,20,00,00,00,10,20,30,40,50,60,60,60,40,40,20,00,00,10,20,30,40,40,40,60,60,70,35,00,00,00,00,10,20,30,40,40,50,60,60,60,40,20,00,10,30,50,50,25,00,00,00,30,60,90,90,90,60,30,00,00,00,00,00];
-var data = [00,00, 10, 20, 30, 40, 50, 60, 70, 80, 90, 90, 90, 60, 30,00,00,00,00,00,05, 10, 20, 40, 60, 80, 90, 90, 90, 90, 70, 50, 30, 30, 30, 30, 30, 10, 10, 10, 40, 70, 70, 70, 90, 90, 90, 70, 50, 30, 10,00,00,00, 40, 80, 80, 80, 80, 70, 60, 50, 40, 30, 20, 10,00,00, 10, 20, 30, 40, 50, 60, 70, 80, 80, 80, 70, 60, 50, 40, 40, 40, 60, 80, 80, 80, 60, 40, 20,00,00,00,00,00];
+const data = [00,00, 10, 20, 30, 40, 50, 60, 70, 80, 90, 90, 90, 60, 30,00,00,00,00,00,05, 10, 20, 40, 60, 80, 90, 90, 90, 90, 70, 50, 30, 30, 30, 30, 30, 10, 10, 10, 40, 70, 70, 70, 90, 90, 90, 70, 50, 30, 10,00,00,00, 40, 80, 80, 80, 80, 70, 60, 50, 40, 30, 20, 10,00,00, 10, 20, 30, 40, 50, 60, 70, 80, 80, 80, 70, 60, 50, 40, 40, 40, 60, 80, 80, 80, 60, 40, 20,00,00,00,00,00];
 //var data = [0,0,0,0,10,20,30,40,50,60,70,80,90,45,0,0,0,0,0,0,10,20,30,40,50,60,70,80,90,45,0,0,0,0,0,0];
 var xstep = 200;
 var ground = [];
@@ -46,28 +30,24 @@ var chrageBatt = 20;
 var isCharging = false;
 var lastChargingX = 0;
 //////////////////////////
-var battempty = false;
-//var maxdist = 309;
-var maxdist = 909;
+const maxdist = 909;
 var cTime = 0;
 
 // var demo;
-var consumption = 0;
 var start_race = 0;
 var tap_start = 0;
-var battstatus = 100;
-var spdLookup = new Float64Array([0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000, 10500, 11000, 11500]);
-var trqLookup = new Float64Array([200, 200, 200, 200, 200, 194, 186, 161, 142, 122, 103, 90, 77.5, 70, 63.5, 58, 52, 49, 45, 42, 40, 38, 36, 34]);
-var tstep = 48;
+const spdLookup = new Float64Array([0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000, 10500, 11000, 11500]);
+const trqLookup = new Float64Array([200, 200, 200, 200, 200, 194, 186, 161, 142, 122, 103, 90, 77.5, 70, 63.5, 58, 52, 49, 45, 42, 40, 38, 36, 34]);
+const tstep = 48;
 var counter = 0;
 
-var motoreff = new Float64Array([0.2, 0.46, 0.65, 0.735, 0.794, 0.846, 0.886, 0.913, 0.922, 0.938, 0.946, 0.94, 0.93975, 0.943, 0.945, 0.945, 0.94, 0.9372, 0.9355, 0.9, 0.86, 0.81, 0.74, 0.65]);
-var px2m = 1 / 20; // 1 pixel == 1/20 meter
-var m2m = 500; // 1 mass in game to 500 kg
-var t2t = 1; // 1 time step == 1/120 second
+const motoreff = new Float64Array([0.2, 0.46, 0.65, 0.735, 0.794, 0.846, 0.886, 0.913, 0.922, 0.938, 0.946, 0.94, 0.93975, 0.943, 0.945, 0.945, 0.94, 0.9372, 0.9355, 0.9, 0.86, 0.81, 0.74, 0.65]);
+const px2m = 1 / 20; // 1 pixel == 1/20 meter
+const m2m = 500; // 1 mass in game to 500 kg
+const  t2t = 1; // 1 time step == 1/120 second
 var fr = 18; // final drive ratio
 
-var pi = Math.PI;
+const pi = Math.PI;
 
 // var DPon = true;
 // var DP_x = new Float64Array([0,210,215,230,245,255,295,305,330,335,345,350,385,410,415,420,475,480,540,545,845,850,860, 950]);
@@ -84,17 +64,17 @@ function messagebox(msg, win) {
 	$("#timeval").hide();
 	if (win) {
 		$("#scorebox").show();
-		submitResult(consumption);
 		$("#ok").show();
 		$("#restart").hide();
 		$("#review").show();
+		// submitResult(consumption);
 	}
 	else {
 		$("#scorebox").show();
 		$("#ok").hide();
-		submitResult(-1);
 		$("#restart").show();
 		$("#review").show();
+		// submitResult(-1);
 	}
 }
 

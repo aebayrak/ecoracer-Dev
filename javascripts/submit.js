@@ -1,13 +1,6 @@
-var max_batt = 0.55; // Change this value
+import { Players } from "./player.js";
 
-const UserData = {
-	username: "",
-	password: "",
-	acc_keys: [],
-	brake_keys: []
-}
-
-function submitResult(c){
+export function submitResult(c){
 	// get date
 	var date = new Date();
 	var ranking_percentage = 0;
@@ -71,10 +64,10 @@ function submitResult(c){
 	}
 }
 
-function getBestScore(){
-	total_num_user = 0;
-	score = [];
-	frall = [];
+export function getBestScore(){
+	let total_num_user = 0;
+	let score = [];
+	let frall = [];
 	$.get('/bestscore',{}, function(data){
 		score = data.bestscore;
 		frall = data.finaldrive;
@@ -83,7 +76,7 @@ function getBestScore(){
 }
 
 var userData;
-function getResults(){
+export function getResults(){
 	var d, i;
 	$.post('/getresults',{'n':10}, function(data){
 		userData = data;
@@ -97,7 +90,7 @@ function getResults(){
 	});	
 }
 
-function getAllPerformance(){
+export function getAllPerformance(){
 	var d, i;
 	$.post('/getperformance',{'n':2408}, function(data){
 		userData = data;
@@ -135,7 +128,7 @@ $(".data").on('tap', function(){
 
 
 // plot user control strategy and consumption
-function plot(d,i){
+export function plot(d,i){
 	var padding = 20;//px
 	var svg_length = $("#data"+i).width();//px
 	var svg_height = $("#data"+i).height();//px
@@ -236,7 +229,7 @@ function plot(d,i){
 				        .text(Math.round(1000-(d.score/3600/1000/max_batt*1000))/10+" from user: " + d.userid + " with finaldrive: " + d.finaldrive);
 }
 
-function plot_convergence(p){
+export function plot_convergence(p){
 	var padding = 20;//px
 	var svg_length = $("#convergence").width();//px
 	var svg_height = $("#convergence").height();//px
@@ -323,12 +316,7 @@ function plot_convergence(p){
 	
 }
 
-
-
-
-
-
-function drawHistory(){
+export function drawHistory(){
 	
 //	var save_x = [0,5,10,15,20,25,30];
 //	var save_v = [2,4,5,6,7,8,10];
@@ -342,9 +330,10 @@ function drawHistory(){
 	var total_distance = 909; // 909*20 *** change this to an equation
 	var speedData = [];
 	var effData = [];
-	for (j=0;j<save_v.length;j++){
-		speedData.push({"x": save_x[j], "y": save_v[j]});
-		effData.push({"x": save_x[j], "y": save_eff[j]});
+	let playerData = Players.HUMAN.localData;
+	for (j=0;j<playerData.save_v.length;j++){
+		speedData.push({"x": playerData.save_x[j], "y": playerData.save_v[j]});
+		effData.push({"x": playerData.save_x[j], "y": playerData.save_eff[j]});
 	}
 	var max_speed = 100;
 	var max_eff = 100;

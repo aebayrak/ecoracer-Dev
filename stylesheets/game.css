@@ -70,20 +70,7 @@
 }
 
 #effval {
-	position: absolute;
-	margin: auto;
-	width: 40px;
-	height: 40px;
-	top: 50px;
-	left: 120px;
-    text-align:center;
-    text-decoration:none;
-    font-size:20px;
-    font-weight:bold;
-    transition: all 0.1s;
-    line-height:20px;
-	z-index: 5;
-    display: none;
+	width: 180px;
 }
 
 #submit {
