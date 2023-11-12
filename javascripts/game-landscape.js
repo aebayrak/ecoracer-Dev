@@ -2,7 +2,7 @@ import { world, scene_widthx } from "./game-physics.js"
 
 let ctx, canvas, elevationPoints, position;
 
-const render = function (timestamp) {
+export const Render = function(timestamp)  {
     // update canvas only when the position changed sufficiently
     if (Math.round(position) !== Math.round(world.player.XPosition())) {
 
@@ -56,11 +56,11 @@ const render = function (timestamp) {
         ctx.stroke();
     }
 
-    requestAnimationFrame(render);
+    // requestAnimationFrame(render);
 }
 
 // draw the landscape (mini map of the whole track with some markers for each player position)
-export const DrawLandscape = function (id, data) {
+export const Init = function (id, data) {
     canvas = document.getElementById(id);
     ctx = canvas.getContext("2d");
     // setup the canvas number of pixels to something large so it scales without much pixelation when CSS scaling is done.
@@ -68,8 +68,7 @@ export const DrawLandscape = function (id, data) {
     canvas.height = 100;
 
     elevationPoints = data;
-    requestAnimationFrame(render);
+    // requestAnimationFrame(render);
 }
 
-
-export default DrawLandscape;
+// export default {Init, Render};

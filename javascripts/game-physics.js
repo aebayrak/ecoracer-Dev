@@ -4,10 +4,14 @@ const GRABABLE_MASK_BIT = 1 << 31;
 const NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
 export const scene_widthx = 18800; // ???m
 export const scene_heightx = 280;
-export let world;
+export var world;
 
 let DISPLACEMENT = 0;
 let MARGIN = 175;
+
+const timeout = 36; // 30s
+// var counter = 0;
+// var cTime = 0;
 
 const xstep = 200;
 let ground = [];
@@ -191,25 +195,23 @@ export class Chipmunk2DWorld {
     };
 
     reset = () => {
-        start_race = tap_start = 1;
         this.player.Reset();
+        this.ai.Reset();
     }
 
     update = (dt) => {
-        var steps = 1;
-        dt = dt / steps;
-        for (var i = 0; i < steps; i++) {
-            this.space.step(dt);
-        }
 
-        cTime = Math.floor(counter / tstep);
-        $("#timeval").html(timeout - cTime);
+        this.space.step(dt);
 
-        if (start_race == 1) {
-            counter += 1;
-            this.player.UpdateVariables();
-            this.ai.UpdateVariables();
+        if( this.simTime === undefined ){
+            this.simTime = 0;
+        } else {
+            this.simTime += dt;
         }
+        $("#timeval").html((timeout - this.simTime).toFixed(1));
+
+        this.player.UpdateVariables();
+        this.ai.UpdateVariables();
 
         let car_pos = Math.round(this.player.XPosition() * px2m);
 
@@ -225,7 +227,7 @@ export class Chipmunk2DWorld {
             }
         }
         // player runs out of time
-        else if (cTime > timeout) {
+        else if (this.simTime > timeout) {
             this.stop();
             this.player.SuspendVehicle();
             messagebox("Time out! Please restart.", false);
@@ -270,7 +272,6 @@ export class Chipmunk2DWorld {
 
     // Draw
     draw = () => {
-        let self = this;
         let ctx = this.ctx;
         let canvas = this.canvas;
 
@@ -299,45 +300,14 @@ export class Chipmunk2DWorld {
 
     // Run
     run = () => {
-        let self = this;
-        self.running = true;
-        let lastTime = 0;
-        const outerStep = function (time) {
-            self.step(time - lastTime);
-            lastTime = time;
-
-            if (self.running) {
-                requestAnimationFrame(outerStep);
-            }
-        };
-
-        outerStep(0);
+        this.running = true;
+        this.simTime = undefined;
     };
 
 
     // Stop
     stop = () => {
         this.running = false;
-        start_race = 0;
-    };
-
-
-    // Step
-    step = (dt) => {
-
-        let lastNumActiveShapes = this.space.activeShapes.count;
-
-        let now = this.now = Date.now();
-        this.update(1 / tstep);
-        this.simulationTime += Date.now() - now;
-
-        // Only redraw if the simulation isn't asleep.
-        if (lastNumActiveShapes > 0 || this.resized) {
-            now = Date.now();
-            this.draw();
-            this.drawTime += Date.now() - now;
-            this.resized = false;
-        }
     };
 
     addFloor = (data, scene_widthx, xstep) => {

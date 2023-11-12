@@ -1,7 +1,9 @@
-import { DrawLandscape } from './game-landscape.js';
+import './ghost-control.js';
+import * as MiniMap from './game-landscape.js';
+import * as submit from './submit.js';
 import { world, Chipmunk2DWorld } from './game-physics.js';
 import { Players } from './player.js';
-import * as submit from './submit.js';
+import GhostControl from './ghost-control.js';
 
 /****************************************** USER **********************************************************/
 function user(username, password) {
@@ -43,7 +45,6 @@ function user(username, password) {
     );
 }
 
-/****************************************** GAME **********************************************************/
 
 function ChangePage(pageID) {
     document.querySelectorAll('body > div').forEach(page => {
@@ -59,17 +60,68 @@ function ChangePage(pageID) {
     });
 }
 
+/****************************************** GAME **********************************************************/
+// let previousTimeStamp;
+let simulationTime;
+function GameLoop(highResTimerMillisec) {
+    // handle ticking the simulation at a fixed interval
+    if (simulationTime === undefined) {
+        simulationTime = highResTimerMillisec
+    } else {
+        const SIM_DT = 1000 / 60; //ms
+        while ((simulationTime + SIM_DT) <= highResTimerMillisec) {
+            // increment simulation by DT
+            world.update(SIM_DT / 1000); // seconds
+            simulationTime += SIM_DT;
+        }
+    }
+
+    // apply AI player input
+    let aiMove = GhostControl.GetAction(Players.AI.XPosition() * px2m);
+    switch (aiMove) {
+        case GhostControl.ACCELERATE:
+            // Players.AI.ReleaseBrake();
+            Players.AI.PressAccelerator();
+            break;
+        case GhostControl.BRAKE:
+            Players.AI.ReleaseAccelerator();
+            // Players.AI.PressBrake();
+            break;
+        case GhostControl.DO_NOTHING:
+            // Players.AI.ReleaseBrake();
+            Players.AI.ReleaseAccelerator();
+            break;
+        default:
+            throw Error("bad action");
+    }
+
+    // handle rendering
+    world.draw();
+    MiniMap.Render(highResTimerMillisec);
+
+    // look for termination conditions
+    if (world.running) {
+        requestAnimationFrame(GameLoop);
+    }
+}
+
+function RunGame() {
+    MiniMap.Init('minimap', data);
+    new Chipmunk2DWorld("game_world");
+    world.reset();
+    world.run();
+    simulationTime = undefined;
+    requestAnimationFrame(GameLoop);
+}
+
 // restart
 function restart() {
-    start_race = 0;
-    world.stop();
     $("#brake").addClass("enabled");
     $("#acc").addClass("enabled");
     $("#messagebox").hide();
     $("#scorebox").hide();
     $("#timeval").show();
     $("#history").html("");
-    counter = 0;
     submit.getBestScore();
     historyDrawn = false;
     let playerData = world.player.serverData;
@@ -77,15 +129,13 @@ function restart() {
         playerData.bestscore = response.bestscore;
         $("#myscore").html("My Best Score: " + Math.round(1000 - (UserData.bestscore / 3600 / 1000 / max_batt * 1000)) / 10 + "%");
     });
-    new Chipmunk2DWorld("game_world");
-    world.reset();
-    world.run();
-    DrawLandscape('minimap', data);
+    RunGame();
 };
 
 // script to run at document.ready()
 $(function () {
     let player = Players.HUMAN;
+    let ghost = Players.AI;
 
     $("#register").on("tap click", function (event) {
         event.preventDefault();
@@ -170,6 +220,7 @@ $(function () {
         if ($("#brake").hasClass("enabled")) {
             $("#brake").addClass("activated");
             player.PressBrake();
+            // ghost.PressBrake();
         }
     });
     $("#brake").on("touchend mouseup", function (event) {
@@ -177,6 +228,7 @@ $(function () {
         if ($("#brake").hasClass("enabled")) {
             $("#brake").removeClass("activated");
             player.ReleaseBrake();
+            // ghost.ReleaseBrake();
         }
     });
 
@@ -185,8 +237,8 @@ $(function () {
         event.preventDefault();
         if ($("#acc").hasClass("enabled")) {
             $("#acc").addClass("activated");
-            start_race = tap_start;
             player.PressAccelerator();
+            // ghost.PressAccelerator();
         }
     });
     $("#acc").on("touchend mouseup", function (event) {
@@ -194,6 +246,7 @@ $(function () {
         if ($("#acc").hasClass("enabled")) {
             $("#acc").removeClass("activated");
             player.ReleaseAccelerator();
+            // ghost.ReleaseAccelerator();
         }
     });
     $("#ok").on("tap click", function (event) {
@@ -229,8 +282,9 @@ $(function () {
             $("#brake").removeClass("locked");
             $("#acc").removeClass("locked");
             submit.getBestScore();
-            world.reset();
+            // world.reset();
             ChangePage("home-page");
+            RunGame();
         });
     });
 
@@ -246,12 +300,6 @@ $(function () {
         $("#canvas_gear").empty();
         restart();
     });
-
-    //Run
-    new Chipmunk2DWorld("game_world");
-    world.run();
-
-    DrawLandscape('minimap', data);
 
     ChangePage("intro-page");
 });
