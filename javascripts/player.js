@@ -36,9 +36,11 @@ class LocalData {
 };
 
 class Player {
-    constructor(name, carColor) {
+    constructor(name, color) {
         this.firendlyName = name;
-        this.color = carColor;
+        this.carColor = color;
+        this.serverData = new ServerData();
+        this.localData = new LocalData();
     }
 
     static NAMES = {
@@ -46,8 +48,6 @@ class Player {
         AI: "ai"
     };
 
-    serverData = new ServerData();
-    localData = new LocalData();
 
     Reset() {
         this.localData = new LocalData();
@@ -123,8 +123,8 @@ class Player {
         }
     }
 
-    AttachToScene(scene, posA, posB) {
-        this.chassis = scene.addChassis(cp.v(80, 10), this.color);
+    AttachToChipmunk2DWorld(scene, posA, posB) {
+        this.chassis = scene.addChassis(cp.v(80, 10), this.carColor);
         let motorbar1 = this.motorbar1 = scene.addBar(posA);
         let motorbar2 = this.motorbar2 = scene.addBar(posB);
         let motorbar3 = this.motorbar3 = scene.addBar(posA);
@@ -332,3 +332,5 @@ export const Players = {
     HUMAN: new Player(Player.NAMES.HUMAN, 'black'),
     AI: new Player(Player.NAMES.AI, 'lightgrey')
 };
+
+export default Players;

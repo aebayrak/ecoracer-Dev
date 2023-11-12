@@ -1,18 +1,41 @@
 import { Players } from "./player.js";
 
+const GRABABLE_MASK_BIT = 1 << 31;
+const NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
+export const scene_widthx = 18800; // ???m
+export const scene_heightx = 280;
+export let world;
+
 let DISPLACEMENT = 0;
 let MARGIN = 175;
 
-export class Scene {
-    constructor(canvas_id, width, height) {
+const xstep = 200;
+let ground = [];
+let gndShape = [];
+let finishFlag = [];
+let finishShape = [];
+
+/// Station Parameters ////
+var stationShape = [];
+var station = [];
+var stationPosX = [17 * 200];
+var stationPosY = [0];
+var stationData = [30, 120, 20, 10];
+var chrageBatt = 20;
+var isCharging = false;
+var lastChargingX = 0;
+//////////////////////////
+
+export class Chipmunk2DWorld {
+    constructor(canvas_id) {
         // Core components
         this.space = new cp.Space();
         this.canvas = document.getElementById(canvas_id);
         this.ctx = this.canvas.getContext('2d');
 
         // Resize
-        this.canvas.width = this.width = width;
-        this.canvas.height = this.height = height;
+        this.canvas.width = this.width = scene_widthx / 15;
+        this.canvas.height = this.height = scene_heightx * 2 / 3;
         this.scale = 1.0;
         this.resized = true;
 
@@ -28,9 +51,11 @@ export class Scene {
         this.boxOffset = cp.v(100, 10);
 
         this.ai = Players.AI;
-        this.ai.AttachToScene(this, posA, posB);
+        this.ai.AttachToChipmunk2DWorld(this, posA, posB);
         this.player = Players.HUMAN;
-        this.player.AttachToScene(this, posA, posB);
+        this.player.AttachToChipmunk2DWorld(this, posA, posB);
+
+        world = this;
 
         // **** Draw methods for Shapes
         cp.PolyShape.prototype.draw = function (ctx, scale, point2canvas) {
@@ -402,5 +427,3 @@ export class Scene {
     };
 
 }
-
-export default Scene;

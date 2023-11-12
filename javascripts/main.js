@@ -1,10 +1,7 @@
-import { DrawLandscape } from './game-landscape.js'
-import { Scene } from './game-physics.js';
+import { DrawLandscape } from './game-landscape.js';
+import { world, Chipmunk2DWorld } from './game-physics.js';
 import { Players } from './player.js';
-import * as submit from './submit.js'
-
-var scene_width = $(window).width();
-var scene_height = $(window).height();
+import * as submit from './submit.js';
 
 /****************************************** USER **********************************************************/
 function user(username, password) {
@@ -48,11 +45,6 @@ function user(username, password) {
 
 /****************************************** GAME **********************************************************/
 
-//Run
-export var demo = new Scene("canvas1", scene_width, scene_heightx);
-export default demo;
-demo.run();
-
 function ChangePage(pageID) {
     document.querySelectorAll('body > div').forEach(page => {
         // console.log(page);
@@ -69,43 +61,32 @@ function ChangePage(pageID) {
 
 // restart
 function restart() {
-    // consumption = 0;
-    // battstatus = 100;
     start_race = 0;
-    demo.stop();
-    demo = new Scene("canvas1", scene_width, scene_heightx);
-    demo.reset();
+    world.stop();
     $("#brake").addClass("enabled");
     $("#acc").addClass("enabled");
     $("#messagebox").hide();
     $("#scorebox").hide();
     $("#timeval").show();
     $("#history").html("");
-    demo.run();
     counter = 0;
-    // UserData.acc_keys = [];
-    // UserData.brake_keys = [];
     submit.getBestScore();
     historyDrawn = false;
-    // save_x = [];
-    // save_v = [];
-    // save_eff = [];
-    // vehSpeed = 0;
-    // motor2eff = 0;
-    // car_posOld = 0;
-    // document.getElementById("pbar").value = 0;
-    let playerData = demo.player.serverData;
+    let playerData = world.player.serverData;
     $.post('/getUser', { 'username': playerData.credentials.username, 'password': playerData.credentials.password }, function (response) {
         playerData.bestscore = response.bestscore;
         $("#myscore").html("My Best Score: " + Math.round(1000 - (UserData.bestscore / 3600 / 1000 / max_batt * 1000)) / 10 + "%");
     });
-    DrawLandscape('canvasbg', data);
+    new Chipmunk2DWorld("game_world");
+    world.reset();
+    world.run();
+    DrawLandscape('minimap', data);
 };
-
-var player = Players.HUMAN;
 
 // script to run at document.ready()
 $(function () {
+    let player = Players.HUMAN;
+
     $("#register").on("tap click", function (event) {
         event.preventDefault();
         if (
@@ -248,7 +229,7 @@ $(function () {
             $("#brake").removeClass("locked");
             $("#acc").removeClass("locked");
             submit.getBestScore();
-            demo.reset();
+            world.reset();
             ChangePage("home-page");
         });
     });
@@ -266,7 +247,11 @@ $(function () {
         restart();
     });
 
-    DrawLandscape('canvasbg', data);
+    //Run
+    new Chipmunk2DWorld("game_world");
+    world.run();
+
+    DrawLandscape('minimap', data);
 
     ChangePage("intro-page");
 });
