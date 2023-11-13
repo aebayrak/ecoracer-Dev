@@ -1,10 +1,11 @@
-import { Players } from "./player.js";
+import { Players } from './player.js';
 
-const GRABABLE_MASK_BIT = 1 << 31;
-const NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
 export const scene_widthx = 18800; // ???m
 export const scene_heightx = 280;
 export var world;
+
+const GRABABLE_MASK_BIT = 1 << 31;
+const NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
 
 let DISPLACEMENT = 0;
 let MARGIN = 175;
@@ -22,12 +23,12 @@ let finishShape = [];
 /// Station Parameters ////
 var stationShape = [];
 var station = [];
-var stationPosX = [17 * 200];
-var stationPosY = [0];
+// var stationPosX = [17 * 200];
+// var stationPosY = [0];
 var stationData = [30, 120, 20, 10];
-var chrageBatt = 20;
-var isCharging = false;
-var lastChargingX = 0;
+// var chrageBatt = 20;
+// var isCharging = false;
+// var lastChargingX = 0;
 //////////////////////////
 
 export class Chipmunk2DWorld {
@@ -39,7 +40,7 @@ export class Chipmunk2DWorld {
 
         // Resize
         this.canvas.width = this.width = scene_widthx / 15;
-        this.canvas.height = this.height = scene_heightx * 2 / 3;
+        this.canvas.height = this.height = (scene_heightx * 2) / 3;
         this.scale = 1.0;
         this.resized = true;
 
@@ -76,10 +77,9 @@ export class Chipmunk2DWorld {
             }
 
             if (this.flag) {
-                ctx.fillStyle = "rgba(255,255,255, 0.1)";
-                ctx.strokeStyle = "rgba(0,0,0, 0.2)";
-            }
-            else {
+                ctx.fillStyle = 'rgba(255,255,255, 0.1)';
+                ctx.strokeStyle = 'rgba(0,0,0, 0.2)';
+            } else {
                 // car shape
                 // 		ctx.lineWidth = 5;
                 // ctx.fillStyle = '#222222'; // max changed the color to fit the other elements
@@ -97,9 +97,8 @@ export class Chipmunk2DWorld {
             ctx.moveTo(a.x - DISPLACEMENT, a.y);
             ctx.lineTo(b.x - DISPLACEMENT, b.y);
             if (this.flag) {
-                ctx.strokeStyle = "rgba(255,0,0, 0.2)";
-            }
-            else {
+                ctx.strokeStyle = 'rgba(255,0,0, 0.2)';
+            } else {
                 // ctx.strokeStyle = "rgba(0,0,0, 1)";
             }
             ctx.stroke();
@@ -110,21 +109,18 @@ export class Chipmunk2DWorld {
             ctx.beginPath();
             ctx.arc(c.x - DISPLACEMENT, c.y, scale * this.r, 0, 2 * Math.PI, false);
             if (this.flag && this.sensor) {
-                ctx.fillStyle = "rgba(0,0,0, 0.2)";
-                ctx.strokeStyle = "rgba(0,0,0,0)";
-            }
-            else if (this.sensor) {
-                ctx.fillStyle = "rgba(0,0,0, 1)";
-                ctx.strokeStyle = "rgba(0,0,0, 0)";
-            }
-            else {
-                ctx.fillStyle = "rgba(0,0,0, 1)";
+                ctx.fillStyle = 'rgba(0,0,0, 0.2)';
+                ctx.strokeStyle = 'rgba(0,0,0,0)';
+            } else if (this.sensor) {
+                ctx.fillStyle = 'rgba(0,0,0, 1)';
+                ctx.strokeStyle = 'rgba(0,0,0, 0)';
+            } else {
+                ctx.fillStyle = 'rgba(0,0,0, 1)';
                 ctx.lineWidth = 5;
                 ctx.strokeStyle = '#e9e9e9';
             }
             ctx.fill();
             ctx.stroke();
-
 
             // And draw a little radian so you can see the circle roll.
             let a = point2canvas(this.tc);
@@ -134,7 +130,7 @@ export class Chipmunk2DWorld {
             ctx.lineTo(b.x - DISPLACEMENT, b.y);
             ctx.stroke();
         };
-    };
+    }
 
     POS = (pos) => {
         return cp.v.add(this.boxOffset, pos);
@@ -145,9 +141,7 @@ export class Chipmunk2DWorld {
         let a = cp.v(0, 10);
         let b = cp.v(0, -10);
 
-        let body = this.space.addBody(
-            new cp.Body(mass, cp.momentForSegment(mass, a, b)),
-        );
+        let body = this.space.addBody(new cp.Body(mass, cp.momentForSegment(mass, a, b)));
         body.setPos(cp.v.add(pos, this.boxOffset));
 
         let shape = this.space.addShape(new cp.SegmentShape(body, a, b, 1));
@@ -160,9 +154,7 @@ export class Chipmunk2DWorld {
     addWheel = (pos) => {
         let radius = 12;
         let mass = 20 / m2m; // 20kg
-        let body = this.space.addBody(
-            new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))),
-        );
+        let body = this.space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
         body.setPos(cp.v.add(pos, this.boxOffset));
 
         let shape = this.space.addShape(new cp.CircleShape(body, radius, cp.v(0, 0)));
@@ -178,14 +170,10 @@ export class Chipmunk2DWorld {
         let width = 4 / px2m; // --> 3.5m length
         let height = 1.8 / px2m; // --> 1.0m height
 
-        let body = this.space.addBody(
-            new cp.Body(mass, cp.momentForBox(mass, width, height)),
-        );
+        let body = this.space.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
         body.setPos(cp.v.add(pos, this.boxOffset));
 
-        let shape = this.space.addShape(
-            new cp.BoxShape(body, width, height, cp.v(0, 0)),
-        );
+        let shape = this.space.addShape(new cp.BoxShape(body, width, height, cp.v(0, 0)));
         shape.style = style;
         shape.setElasticity(0);
         shape.setFriction(0.7);
@@ -197,18 +185,17 @@ export class Chipmunk2DWorld {
     reset = () => {
         this.player.Reset();
         this.ai.Reset();
-    }
+    };
 
     update = (dt) => {
-
         this.space.step(dt);
 
-        if( this.simTime === undefined ){
+        if (this.simTime === undefined) {
             this.simTime = 0;
         } else {
             this.simTime += dt;
         }
-        $("#timeval").html((timeout - this.simTime).toFixed(1));
+        $('#timeval').html((timeout - this.simTime).toFixed(1));
 
         this.player.UpdateVariables();
         this.ai.UpdateVariables();
@@ -221,16 +208,16 @@ export class Chipmunk2DWorld {
             this.stop();
             this.player.SuspendVehicle();
             if (!this.player.IsBattEmpty()) {
-                messagebox("Congratulations!", true);
+                messagebox('Congratulations!', true);
             } else {
-                messagebox("Good job but try to save battery!", false);
+                messagebox('Good job but try to save battery!', false);
             }
         }
         // player runs out of time
         else if (this.simTime > timeout) {
             this.stop();
             this.player.SuspendVehicle();
-            messagebox("Time out! Please restart.", false);
+            messagebox('Time out! Please restart.', false);
         }
         // player went backwards
         else if (car_pos < 1) {
@@ -242,27 +229,25 @@ export class Chipmunk2DWorld {
         else if (this.player.YPosition() < 0) {
             this.stop();
             this.player.SuspendVehicle();
-            messagebox("Oops...", false);
+            messagebox('Oops...', false);
         }
         // TODO: not sure what this is checking for
         else if (this.player.chassis.rot.x < 0) {
             this.stop();
             this.player.SuspendVehicle();
-            messagebox("The driver is too drunk!", false);
+            messagebox('The driver is too drunk!', false);
         }
         // battery is empty, we are slow/stopped, and too far from the finish line
-        else if (this.player.IsBattEmpty() &&
-            (Math.abs(chassis.vx)) <= 2 &&
-            (car_pos < maxdist)) {
+        else if (this.player.IsBattEmpty() && Math.abs(chassis.vx) <= 2 && car_pos < maxdist) {
             this.stop();
             this.player.SuspendVehicle();
-            messagebox("The battery is messed up!", false);
+            messagebox('The battery is messed up!', false);
         }
     };
 
     canvas2point = (x, y) => {
         let rect = canvas.getBoundingClientRect(); //so canvas can be anywhere on the page
-        return cp.v((x / this.scale) - rect.left, this.height - y / this.scale + rect.top);
+        return cp.v(x / this.scale - rect.left, this.height - y / this.scale + rect.top);
     };
 
     point2canvas = (point) => {
@@ -303,7 +288,6 @@ export class Chipmunk2DWorld {
         this.running = true;
         this.simTime = undefined;
     };
-
 
     // Stop
     stop = () => {
@@ -368,13 +352,11 @@ export class Chipmunk2DWorld {
         station[0] = space.addShape(stationShape[0]);
         station[0].flag = true;
         station[0].sensor = true;
-
-
-    }
+    };
 
     // Drawing helper methods
     drawCircle = (ctx, scale, point2canvas, c, radius) => {
-        var c = point2canvas(c);
+        c = point2canvas(c);
         ctx.beginPath();
         ctx.arc(c.x - DISPLACEMENT, c.y, scale * radius, 0, 2 * Math.PI, false);
         ctx.fill();
@@ -382,7 +364,8 @@ export class Chipmunk2DWorld {
     };
 
     drawLine = (ctx, point2canvas, a, b) => {
-        a = point2canvas(a); b = point2canvas(b);
+        a = point2canvas(a);
+        b = point2canvas(b);
 
         ctx.beginPath();
         ctx.moveTo(a.x - DISPLACEMENT, a.y);
@@ -395,5 +378,4 @@ export class Chipmunk2DWorld {
         var size_ = cp.v.sub(point2canvas(cp.v.add(pos, size)), pos_);
         ctx.fillRect(pos_.x - DISPLACEMENT, pos_.y, size_.x - DISPLACEMENT, size_.y);
     };
-
 }

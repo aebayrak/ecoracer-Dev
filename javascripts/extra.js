@@ -34,7 +34,6 @@ function messagebox(msg, win) {
 	$("#brake").removeClass("enabled");
 	$("#acc").removeClass("activated");
 	$("#brake").removeClass("activated");
-	$("#timeval").hide();
 	if (win) {
 		$("#scorebox").show();
 		$("#ok").show();
