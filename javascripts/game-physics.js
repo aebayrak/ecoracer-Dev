@@ -2,13 +2,14 @@ import { Players } from './player.js';
 
 export const scene_widthx = 18800; // ???m
 export const scene_heightx = 280;
+ /** @type {Chipmunk2DWorld} */
 export var world;
 
 const GRABABLE_MASK_BIT = 1 << 31;
 const NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
 
-let DISPLACEMENT = 0;
-let MARGIN = 175;
+let DISPLACEMENT = 0; // reference point for rendering, follows player vehicle position
+const MARGIN = 175; // how much of a margin between the player and the left edge of canvas
 
 const MAX_GAME_TIME = 36; // 30s
 
@@ -29,8 +30,84 @@ let finishShape = [];
 // var lastChargingX = 0;
 //////////////////////////
 
+
+// **** Draw methods for Shapes
+cp.PolyShape.prototype.draw = function (ctx, scale, point2canvas) {
+    ctx.beginPath();
+
+    var verts = this.tVerts;
+    var len = verts.length;
+    var lastPoint = point2canvas(new cp.Vect(verts[len - 2], verts[len - 1]));
+    ctx.moveTo(lastPoint.x - DISPLACEMENT, lastPoint.y);
+
+    for (var i = 0; i < len; i += 2) {
+        var p = point2canvas(new cp.Vect(verts[i], verts[i + 1]));
+        ctx.lineTo(p.x - DISPLACEMENT, p.y);
+    }
+
+    if (this.flag) {
+        ctx.fillStyle = 'rgba(255,255,255, 0.1)';
+        ctx.strokeStyle = 'rgba(0,0,0, 0.2)';
+    } else {
+        // car shape
+        // 		ctx.lineWidth = 5;
+        // ctx.fillStyle = '#222222'; // max changed the color to fit the other elements
+        // 		ctx.strokeStyle = '#f9f9f9';
+    }
+    ctx.fill();
+    ctx.stroke();
+};
+
+cp.SegmentShape.prototype.draw = function (ctx, scale, point2canvas) {
+    let a = point2canvas(this.ta);
+    let b = point2canvas(this.tb);
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(a.x - DISPLACEMENT, a.y);
+    ctx.lineTo(b.x - DISPLACEMENT, b.y);
+    if (this.flag) {
+        ctx.strokeStyle = 'rgba(255,0,0, 0.2)';
+    } else {
+        // ctx.strokeStyle = "rgba(0,0,0, 1)";
+    }
+    ctx.stroke();
+};
+
+cp.CircleShape.prototype.draw = function (ctx, scale, point2canvas) {
+    let c = point2canvas(this.tc);
+    ctx.beginPath();
+    ctx.arc(c.x - DISPLACEMENT, c.y, scale * this.r, 0, 2 * Math.PI, false);
+    if (this.flag && this.sensor) {
+        ctx.fillStyle = 'rgba(0,0,0, 0.2)';
+        ctx.strokeStyle = 'rgba(0,0,0,0)';
+    } else if (this.sensor) {
+        ctx.fillStyle = 'rgba(0,0,0, 1)';
+        ctx.strokeStyle = 'rgba(0,0,0, 0)';
+    } else {
+        ctx.fillStyle = 'rgba(0,0,0, 1)';
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#e9e9e9';
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    // And draw a little radian so you can see the circle roll.
+    let a = point2canvas(this.tc);
+    let b = point2canvas(cp.v.mult(this.body.rot, this.r).add(this.tc));
+    ctx.beginPath();
+    ctx.moveTo(a.x - DISPLACEMENT, a.y);
+    ctx.lineTo(b.x - DISPLACEMENT, b.y);
+    ctx.stroke();
+};
+
+
 /**
- * Wrapper class around a Chimpunk.js (Chipmunk2D) physics simulation engine.
+ * Wrapper class around a Chimpunk.js (ported from Chipmunk Game Dynamics in C) physics simulation engine.
+ * At this time, chimpunk.js corresponds to version 6.1.1, and uses the same API as the C language version.
+ * The C language API is documented here {@link https://files.slembcke.net/chipmunk/release/Chipmunk-6.x/Chipmunk-6.1.1-Docs/}
+ * The minor adaptation of C API to JS is described here {@link https://github.com/josephg/Chipmunk-js}
+ * 
+ * This class was adapted from the /demo/demo.js file in the Chipmunk-js project on github.
  * 
  * This provides:
  *    - convenience functions for adding high level objects to the engine
@@ -49,8 +126,10 @@ export class Chipmunk2DWorld {
         this.ctx = this.canvas.getContext('2d');
 
         // Resize
-        this.canvas.width = this.width = scene_widthx / 15;
-        this.canvas.height = this.height = (scene_heightx * 2) / 3;
+        // this.canvas.width = this.width = scene_widthx / 15;
+        // this.canvas.height = this.height = (scene_heightx * 2) / 3;
+        this.canvas.width = this.width = scene_widthx / 12;
+        this.canvas.height = this.height = scene_heightx;
         this.scale = 1.0;
         this.resized = true;
 
@@ -72,74 +151,6 @@ export class Chipmunk2DWorld {
 
         world = this;
 
-        // **** Draw methods for Shapes
-        cp.PolyShape.prototype.draw = function (ctx, scale, point2canvas) {
-            ctx.beginPath();
-
-            var verts = this.tVerts;
-            var len = verts.length;
-            var lastPoint = point2canvas(new cp.Vect(verts[len - 2], verts[len - 1]));
-            ctx.moveTo(lastPoint.x - DISPLACEMENT, lastPoint.y);
-
-            for (var i = 0; i < len; i += 2) {
-                var p = point2canvas(new cp.Vect(verts[i], verts[i + 1]));
-                ctx.lineTo(p.x - DISPLACEMENT, p.y);
-            }
-
-            if (this.flag) {
-                ctx.fillStyle = 'rgba(255,255,255, 0.1)';
-                ctx.strokeStyle = 'rgba(0,0,0, 0.2)';
-            } else {
-                // car shape
-                // 		ctx.lineWidth = 5;
-                // ctx.fillStyle = '#222222'; // max changed the color to fit the other elements
-                // 		ctx.strokeStyle = '#f9f9f9';
-            }
-            ctx.fill();
-            ctx.stroke();
-        };
-
-        cp.SegmentShape.prototype.draw = function (ctx, scale, point2canvas) {
-            let a = point2canvas(this.ta);
-            let b = point2canvas(this.tb);
-            ctx.lineWidth = 10;
-            ctx.beginPath();
-            ctx.moveTo(a.x - DISPLACEMENT, a.y);
-            ctx.lineTo(b.x - DISPLACEMENT, b.y);
-            if (this.flag) {
-                ctx.strokeStyle = 'rgba(255,0,0, 0.2)';
-            } else {
-                // ctx.strokeStyle = "rgba(0,0,0, 1)";
-            }
-            ctx.stroke();
-        };
-
-        cp.CircleShape.prototype.draw = function (ctx, scale, point2canvas) {
-            let c = point2canvas(this.tc);
-            ctx.beginPath();
-            ctx.arc(c.x - DISPLACEMENT, c.y, scale * this.r, 0, 2 * Math.PI, false);
-            if (this.flag && this.sensor) {
-                ctx.fillStyle = 'rgba(0,0,0, 0.2)';
-                ctx.strokeStyle = 'rgba(0,0,0,0)';
-            } else if (this.sensor) {
-                ctx.fillStyle = 'rgba(0,0,0, 1)';
-                ctx.strokeStyle = 'rgba(0,0,0, 0)';
-            } else {
-                ctx.fillStyle = 'rgba(0,0,0, 1)';
-                ctx.lineWidth = 5;
-                ctx.strokeStyle = '#e9e9e9';
-            }
-            ctx.fill();
-            ctx.stroke();
-
-            // And draw a little radian so you can see the circle roll.
-            let a = point2canvas(this.tc);
-            let b = point2canvas(cp.v.mult(this.body.rot, this.r).add(this.tc));
-            ctx.beginPath();
-            ctx.moveTo(a.x - DISPLACEMENT, a.y);
-            ctx.lineTo(b.x - DISPLACEMENT, b.y);
-            ctx.stroke();
-        };
     }
 
     /**
@@ -280,7 +291,7 @@ export class Chipmunk2DWorld {
             messagebox('The driver is too drunk!', false);
         }
         // battery is empty, we are slow/stopped, and too far from the finish line
-        else if (this.player.IsBattEmpty() && Math.abs(chassis.vx) <= 2 && car_pos < MAX_DISTANCE) {
+        else if (this.player.IsBattEmpty() && Math.abs(this.player.chassis.vx) <= 2 && car_pos < MAX_DISTANCE) {
             this.Stop();
             this.player.SuspendVehicle();
             messagebox('The battery is messed up!', false);
@@ -301,7 +312,7 @@ export class Chipmunk2DWorld {
     /**
      * Convert physics engine coordinates to canvas coordinates
      * @param {cp.Vect} point - the physics engine coordinates
-     * @returns the canvas coordinates
+     * @returns {cp.Vect} the canvas coordinates
      */
     Point2Canvas = (point) => {
         let vector = cp.v(point.x * this.scale, (this.height - point.y) * this.scale);
@@ -317,10 +328,12 @@ export class Chipmunk2DWorld {
 
         DISPLACEMENT = this.player.XPosition() - MARGIN;
 
-        // Draw shapes
-        ctx.strokeStyle = 'black';
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+        // Setup default styles
+        ctx.font = '24px serif';
+        ctx.strokeStyle = 'black';
+        
+        // Draw shapes
         this.space.eachShape((shape) => {
             // console.log(shape);
             ctx.save();
@@ -331,11 +344,39 @@ export class Chipmunk2DWorld {
             ctx.restore();
         });
 
-        this.space.eachConstraint((c) => {
-            if (c.draw) {
-                c.draw(ctx, this.scale, this.Point2Canvas);
-            }
-        });
+        let ai_x_pos = this.ai.XPosition();
+        let player_x_pos = this.player.XPosition();
+        const MIN_POSITION_DIFF = scene_widthx * 0.03; // 3% of the track
+        
+        if( (ai_x_pos - player_x_pos) > MIN_POSITION_DIFF ){
+            // we are too far behind!!!
+            // get position of vehicle body
+            let where = this.Point2Canvas(this.player.chassis.p);
+            where.x -= DISPLACEMENT;
+            // pick a spot above the vehicle
+            ctx.fillText("Hurry UP!!!", where.x - 80, where.y - 40);
+            // pick a spot in front of the vehicle (top of chevron lines)
+            where.x += 50;
+            where.y -= 20;
+            this.#DrawChevrons(where, 10);
+        } else if ((player_x_pos - ai_x_pos) > MIN_POSITION_DIFF){
+            // we are too far ahead!!!
+            let where = this.Point2Canvas(this.player.chassis.p);
+            where.x -= DISPLACEMENT;
+            // pick a spot above the vehicle
+            ctx.fillText("Slow DOWN!!!", where.x - 80, where.y - 40);
+            // pick a spot behind the vehicle (top of chevron lines)
+            where.x -= 50;
+            where.y -= 20;
+            // this.#DrawReverseChevron(where);
+            this.#DrawChevrons(where, -10);
+        }
+
+        // this.space.eachConstraint((c) => {
+            // if (c.draw) {
+            //     c.draw(ctx, this.scale, this.Point2Canvas);
+            // }
+        // });
     };
 
     /**
@@ -423,4 +464,35 @@ export class Chipmunk2DWorld {
         station[0].flag = true;
         station[0].sensor = true;
     };
+
+    frames_per_alpha = 60;
+    alpha_frame = 0;
+
+    /**
+     * Draw some chevrons beginning at the provided canvas coordinates.
+     * @param {cp.Vect} where - where to start drawing
+     * @param {number} x_step - the amount of x offset to use, positive leads to right pointing chevron, negative to left pointing.
+     */
+    #DrawChevrons = ( where, x_step ) => {
+        let ctx = this.ctx;
+
+        // prepare to draw
+        ctx.beginPath();
+        ctx.lineWidth = 5;
+        // the chevron animation uses a sine function for transparency (alpha)
+        // since alpha is in range [0,1], and sin() is [-1,1], we scale and shift the sin() curve.
+        let a = 0.5 + (0.5 * Math.sin(2*Math.PI*(this.alpha_frame/this.frames_per_alpha)));
+        ctx.strokeStyle = 'rgba(255,0,0,'+a+')';
+        this.alpha_frame = (this.alpha_frame + 1) % this.frames_per_alpha;
+
+        // draw the 3 chevrons
+        for(let i=0; i<3; i++){
+            where.x += 2*x_step;
+            ctx.moveTo(where.x, where.y);
+            ctx.lineTo(where.x + x_step, where.y + 10);
+            ctx.lineTo(where.x, where.y + 20);
+        }
+
+        ctx.stroke();
+    }
 }

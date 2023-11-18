@@ -37,7 +37,7 @@ export const GhostControl = {
             throw new Error('Bad distance!');
         }
 
-        let action = actions[Math.round(distance / ACTION_SCALE)];
+        let action = actions[Math.floor(distance / ACTION_SCALE)];
 
         if (lastAction != action) {
             lastAction = action;

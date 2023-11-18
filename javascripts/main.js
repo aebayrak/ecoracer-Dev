@@ -41,9 +41,10 @@ function user(username, password) {
 }
 
 /**
- * Simple replacement for the jQuery mobile page selector. Used to toggle between top level 'pages' in the game.
- * This is limited to pages being defined as <div> immediately under the <body> element
- * @param {string} pageID - the HTML ID attribute of the <div> element immediately under <body> we wish to switch to.
+ * Simple replacement for the jQuery-mobile page selector.
+ * Use this to toggle between top level 'pages' in the game.
+ * This is limited to assume that 'pages' are being defined as <div> immediately under the <body> element.
+ * @param {string} pageID - the HTML ID attribute of the <div> element we wish to switch to.
  */
 function ChangePage(pageID) {
     document.querySelectorAll('body > div').forEach((page) => {
@@ -106,7 +107,7 @@ function GameLoop(highResTimerMillisec) {
     if(render_frame) {
         lastRenderTime = highResTimerMillisec;
         world.Draw();
-        MiniMap.Render(highResTimerMillisec);
+        MiniMap.Draw(highResTimerMillisec);
     }
 
     // look for termination conditions

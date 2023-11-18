@@ -2,7 +2,7 @@ import { world, scene_widthx } from './game-physics.js';
 
 let ctx, canvas, elevationPoints, position;
 
-export const Render = function () {
+export const Draw = function () {
     // update canvas only when the position changed sufficiently
     if (Math.round(position) !== Math.round(world.player.XPosition())) {
         // wipe canvas clean
