@@ -1,5 +1,5 @@
 /**
- * This module is responsible for making the AI learned data avaialble for use.
+ * This module is responsible for making the AI learned data available for use.
  */
 
 import { Players } from './player.js';
@@ -31,7 +31,7 @@ export const GhostControl = {
         let distance = Players.AI.XPosition() * px2m;
 
         // TODO: use distances array to find appropriate index.
-        // const ACTION_SCALE = maxdist / actions.length;
+        // const ACTION_SCALE = MAX_DISTANCE / actions.length;
         const ACTION_SCALE = 5;
         if (distance < 0 || distance / ACTION_SCALE >= actions.length) {
             throw new Error('Bad distance!');

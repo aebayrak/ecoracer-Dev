@@ -10,9 +10,7 @@ const NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
 let DISPLACEMENT = 0;
 let MARGIN = 175;
 
-const timeout = 36; // 30s
-// var counter = 0;
-// var cTime = 0;
+const MAX_GAME_TIME = 36; // 30s
 
 const xstep = 200;
 let ground = [];
@@ -21,17 +19,29 @@ let finishFlag = [];
 let finishShape = [];
 
 /// Station Parameters ////
-var stationShape = [];
-var station = [];
+// var stationShape = [];
+// var station = [];
 // var stationPosX = [17 * 200];
 // var stationPosY = [0];
-var stationData = [30, 120, 20, 10];
+// var stationData = [30, 120, 20, 10];
 // var chrageBatt = 20;
 // var isCharging = false;
 // var lastChargingX = 0;
 //////////////////////////
 
+/**
+ * Wrapper class around a Chimpunk.js (Chipmunk2D) physics simulation engine.
+ * 
+ * This provides:
+ *    - convenience functions for adding high level objects to the engine
+ *    - logic to render all the shapes added to the engine
+ *    - scaling and translating of the dimensions between the engine and an HTML <canvas> element
+ *    - code specific to the game logic to determine game-over conditions
+ */
 export class Chipmunk2DWorld {
+    /**
+     * @param {string} canvas_id - the CSS query selector for a Canvas element to use as a rendering output.
+     */
     constructor(canvas_id) {
         // Core components
         this.space = new cp.Space();
@@ -48,8 +58,8 @@ export class Chipmunk2DWorld {
         this.space.gravity = cp.v(0, -400);
         this.space.sleepTimeThreshold = 100;
 
-        this.addFloor(data, scene_widthx, xstep);
-        this.addTerminal(scene_widthx - 3 * xstep);
+        this.#AddGround(data, scene_widthx, xstep);
+        this.#AddFinishLine(scene_widthx - 3 * xstep);
 
         let posA = cp.v(50, 0);
         let posB = cp.v(110, 0);
@@ -132,11 +142,21 @@ export class Chipmunk2DWorld {
         };
     }
 
+    /**
+     * Obtain a position that accounts for boxOffset
+     * @param {cp.Vect} pos - to position to translate
+     * @returns {cp.Vect} the translated position.
+     */
     POS = (pos) => {
         return cp.v.add(this.boxOffset, pos);
     };
 
-    addBar = (pos) => {
+    /**
+     * Add a body and shape to the engine representing a Bar.
+     * @param {cp.Vect} pos - the location to place the body and shape.
+     * @returns {cp.Body} the body that was added
+     */
+    AddBar = (pos) => {
         let mass = 1 / m2m; // 1kg
         let a = cp.v(0, 10);
         let b = cp.v(0, -10);
@@ -151,7 +171,12 @@ export class Chipmunk2DWorld {
         return body;
     };
 
-    addWheel = (pos) => {
+    /**
+     * Add a body and shape to the engine representing a Wheel
+     * @param {cp.Vect} pos - the location to place the body and shape
+     * @returns {cp.Body} the body that was added
+     */
+    AddWheel = (pos) => {
         let radius = 12;
         let mass = 20 / m2m; // 20kg
         let body = this.space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
@@ -165,7 +190,13 @@ export class Chipmunk2DWorld {
         return body;
     };
 
-    addChassis = (pos, style = 'black') => {
+    /**
+     * Add a body and shape to the engine representing a Vehicle Chassis
+     * @param {cp.Vect} pos - the location to place the body and shape
+     * @param {string} style - a CSS style string, mainly color, to use when rendering the shapes.
+     * @returns {cp.Body} the body that was added
+     */
+    AddChassis = (pos, style = 'black') => {
         let mass = 1500 / m2m; // 1500 kg
         let width = 4 / px2m; // --> 3.5m length
         let height = 1.8 / px2m; // --> 1.0m height
@@ -182,20 +213,31 @@ export class Chipmunk2DWorld {
         return body;
     };
 
-    reset = () => {
+    /**
+     * Reset any and all internal variables.
+     * // TODO: Need to reset the engine at some point.
+     */
+    Reset = () => {
         this.player.Reset();
         this.ai.Reset();
     };
 
-    update = (dt) => {
-        this.space.step(dt);
+    /**
+     * Advance the simulation by @param dt seconds, then check for terminating conditions.
+     * @param {number} dt - the amount of time to advance, in seconds.
+     */
+    Update = (dt) => {
+        if( ! this.running ) return;
+
+        const SPEED_UP_FACTOR = 60/48; // old code had tick size different from frame rate.
+        this.space.step(dt * SPEED_UP_FACTOR);
 
         if (this.simTime === undefined) {
             this.simTime = 0;
         } else {
             this.simTime += dt;
         }
-        $('#timeval').html((timeout - this.simTime).toFixed(1));
+        $('#timeval').html((MAX_GAME_TIME - this.simTime).toFixed(1));
 
         this.player.UpdateVariables();
         this.ai.UpdateVariables();
@@ -204,8 +246,8 @@ export class Chipmunk2DWorld {
 
         // check for terminating conditions
         // player crossing the finish line
-        if (car_pos >= maxdist) {
-            this.stop();
+        if (car_pos >= MAX_DISTANCE) {
+            this.Stop();
             this.player.SuspendVehicle();
             if (!this.player.IsBattEmpty()) {
                 messagebox('Congratulations!', true);
@@ -214,49 +256,62 @@ export class Chipmunk2DWorld {
             }
         }
         // player runs out of time
-        else if (this.simTime > timeout) {
-            this.stop();
+        else if (this.simTime > MAX_GAME_TIME) {
+            this.Stop();
             this.player.SuspendVehicle();
             messagebox('Time out! Please restart.', false);
         }
         // player went backwards
         else if (car_pos < 1) {
-            this.stop();
+            this.Stop();
             this.player.SuspendVehicle();
             messagebox("Can't go back! Please restart.", false);
         }
         // player went underground
         else if (this.player.YPosition() < 0) {
-            this.stop();
+            this.Stop();
             this.player.SuspendVehicle();
             messagebox('Oops...', false);
         }
         // TODO: not sure what this is checking for
         else if (this.player.chassis.rot.x < 0) {
-            this.stop();
+            this.Stop();
             this.player.SuspendVehicle();
             messagebox('The driver is too drunk!', false);
         }
         // battery is empty, we are slow/stopped, and too far from the finish line
-        else if (this.player.IsBattEmpty() && Math.abs(chassis.vx) <= 2 && car_pos < maxdist) {
-            this.stop();
+        else if (this.player.IsBattEmpty() && Math.abs(chassis.vx) <= 2 && car_pos < MAX_DISTANCE) {
+            this.Stop();
             this.player.SuspendVehicle();
             messagebox('The battery is messed up!', false);
         }
     };
 
-    canvas2point = (x, y) => {
+    /**
+     * Convert canvas coordinates to physics engine coordinates
+     * @param {number} x - x position on canvas
+     * @param {number} y - y position on canvas
+     * @returns {cp.Vect} the engine coordinates
+     */
+    Canvas2Point = (x, y) => {
         let rect = canvas.getBoundingClientRect(); //so canvas can be anywhere on the page
         return cp.v(x / this.scale - rect.left, this.height - y / this.scale + rect.top);
     };
 
-    point2canvas = (point) => {
+    /**
+     * Convert physics engine coordinates to canvas coordinates
+     * @param {cp.Vect} point - the physics engine coordinates
+     * @returns the canvas coordinates
+     */
+    Point2Canvas = (point) => {
         let vector = cp.v(point.x * this.scale, (this.height - point.y) * this.scale);
         return vector;
     };
 
-    // Draw
-    draw = () => {
+    /**
+     * Render the physics engine shapes onto the canvas using the 2D context interface.
+     */
+    Draw = () => {
         let ctx = this.ctx;
         let canvas = this.canvas;
 
@@ -272,35 +327,43 @@ export class Chipmunk2DWorld {
             // console.log(ctx.fillStyle, shape.style);
             ctx.fillStyle = shape.style;
             ctx.strokeStyle = ctx.fillStyle;
-            shape.draw(ctx, this.scale, this.point2canvas);
+            shape.draw(ctx, this.scale, this.Point2Canvas);
             ctx.restore();
         });
 
         this.space.eachConstraint((c) => {
             if (c.draw) {
-                c.draw(ctx, this.scale, this.point2canvas);
+                c.draw(ctx, this.scale, this.Point2Canvas);
             }
         });
     };
 
-    // Run
-    run = () => {
+    /**
+     * Enables the game world, should be called when we wish to begin the timer and physics simulations to run.
+     */
+    Run = () => {
         this.running = true;
         this.simTime = undefined;
     };
 
-    // Stop
-    stop = () => {
+    /**
+     * Disable the game world.
+     */
+    Stop = () => {
         this.running = false;
     };
 
-    addFloor = (data, scene_widthx, xstep) => {
-        var space = this.space;
-        var staticBody = space.staticBody;
-
+    /**
+     * Private function to add the ground/road shapes to the engine, based on a given dataset for elevations.
+     * @param {Array<number>} data - the elevation dataset
+     * @param {number} scene_widthx - the width of the world
+     * @param {number} xstep - the width of each data point in @param data
+     */
+    #AddGround = (data, scene_widthx, xstep) => {
+        // add provided track data
         for (var i = 0; i < scene_widthx / xstep - 3; i++) {
-            gndShape[i] = new cp.SegmentShape(staticBody, cp.v(i * xstep, data[i]), cp.v((i + 1) * xstep, data[i + 1]), 0);
-            ground[i] = space.addShape(gndShape[i]);
+            gndShape[i] = new cp.SegmentShape(this.space.staticBody, cp.v(i * xstep, data[i]), cp.v((i + 1) * xstep, data[i + 1]), 0);
+            ground[i] = this.space.addShape(gndShape[i]);
             ground[i].setElasticity(0);
             ground[i].setFriction(0.1);
             ground[i].layers = NOT_GRABABLE_MASK;
@@ -308,24 +371,31 @@ export class Chipmunk2DWorld {
 
         // extra floor to complete the scene
         for (var j = i; j < i + 6; j++) {
-            gndShape[j] = new cp.SegmentShape(staticBody, cp.v(j * xstep, data[i]), cp.v((j + 1) * xstep, data[i + 1]), 0);
-            ground[j] = space.addShape(gndShape[j]);
+            gndShape[j] = new cp.SegmentShape(this.space.staticBody, cp.v(j * xstep, data[i]), cp.v((j + 1) * xstep, data[i + 1]), 0);
+            ground[j] = this.space.addShape(gndShape[j]);
             ground[j].setElasticity(0);
             ground[j].setFriction(0.1);
             ground[j].layers = NOT_GRABABLE_MASK;
         }
     };
 
-    addTerminal = (distance) => {
-        var space = this.space;
-        var staticBody = space.staticBody;
-        finishShape[0] = new cp.SegmentShape(staticBody, cp.v(distance, 0), cp.v(distance, 280), 0);
-        finishFlag[0] = space.addShape(finishShape[0]);
+    /**
+     * Private function to add the finish line to the engine
+     * @param {number} distance - the X position, in engine coordinates, to place the finish line at.
+     */
+    #AddFinishLine = (distance) => {
+        finishShape[0] = new cp.SegmentShape(this.space.staticBody, cp.v(distance, 0), cp.v(distance, scene_heightx), 0);
+        finishFlag[0] = this.space.addShape(finishShape[0]);
         finishFlag[0].flag = true;
         finishFlag[0].sensor = true;
     };
 
-    addStation = (distance, elevation) => {
+    /**
+     * == Future == : function for adding charging station(s) to the track.
+     * @param {number} distance - x position
+     * @param {number} elevation - y position
+     */
+    #AddStation = (distance, elevation) => {
         var space = this.space;
         var staticBody = space.staticBody;
         /*stationShape[0] = new cp.BoxShape(staticBody, stationData[2], stationData[3], cp.v(distance,45));
@@ -352,30 +422,5 @@ export class Chipmunk2DWorld {
         station[0] = space.addShape(stationShape[0]);
         station[0].flag = true;
         station[0].sensor = true;
-    };
-
-    // Drawing helper methods
-    drawCircle = (ctx, scale, point2canvas, c, radius) => {
-        c = point2canvas(c);
-        ctx.beginPath();
-        ctx.arc(c.x - DISPLACEMENT, c.y, scale * radius, 0, 2 * Math.PI, false);
-        ctx.fill();
-        ctx.stroke();
-    };
-
-    drawLine = (ctx, point2canvas, a, b) => {
-        a = point2canvas(a);
-        b = point2canvas(b);
-
-        ctx.beginPath();
-        ctx.moveTo(a.x - DISPLACEMENT, a.y);
-        ctx.lineTo(b.x - DISPLACEMENT, b.y);
-        ctx.stroke();
-    };
-
-    drawRect = (ctx, point2canvas, pos, size) => {
-        var pos_ = point2canvas(pos);
-        var size_ = cp.v.sub(point2canvas(cp.v.add(pos, size)), pos_);
-        ctx.fillRect(pos_.x - DISPLACEMENT, pos_.y, size_.x - DISPLACEMENT, size_.y);
     };
 }

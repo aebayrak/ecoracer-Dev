@@ -126,13 +126,13 @@ class Player {
     }
 
     AttachToChipmunk2DWorld(scene, posA, posB) {
-        this.chassis = scene.addChassis(cp.v(80, 10), this.carColor);
-        let motorbar1 = (this.motorbar1 = scene.addBar(posA));
-        let motorbar2 = (this.motorbar2 = scene.addBar(posB));
-        let motorbar3 = (this.motorbar3 = scene.addBar(posA));
-        let motorbar4 = (this.motorbar4 = scene.addBar(posB));
-        this.wheel1 = scene.addWheel(posA);
-        this.wheel2 = scene.addWheel(posB);
+        this.chassis = scene.AddChassis(cp.v(80, 10), this.carColor);
+        let motorbar1 = (this.motorbar1 = scene.AddBar(posA));
+        let motorbar2 = (this.motorbar2 = scene.AddBar(posB));
+        let motorbar3 = (this.motorbar3 = scene.AddBar(posA));
+        let motorbar4 = (this.motorbar4 = scene.AddBar(posB));
+        this.wheel1 = scene.AddWheel(posA);
+        this.wheel2 = scene.AddWheel(posB);
 
         let joint1 = new cp.GrooveJoint(this.chassis, this.wheel1, cp.v(-30, -10), cp.v(-30, -20), cp.v(0, 0));
 
@@ -293,7 +293,7 @@ class Player {
 
     UpdateUI() {
         if (this.firendlyName === Player.NAMES.HUMAN) {
-            document.getElementById('pbar').value = ((this.localData.car_posOld - 9) / (maxdist - 9)) * 100;
+            document.getElementById('pbar').value = ((this.localData.car_posOld - 9) / (MAX_DISTANCE - 9)) * 100;
             $('#speedval').html(this.localData.vehSpeed + ' MPH');
             $('#battval').html(this.localData.battstatus + '%');
 

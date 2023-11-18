@@ -4,7 +4,16 @@ import { world, Chipmunk2DWorld } from './game-physics.js';
 import { Players } from './player.js';
 import { GhostControl } from './ghost-control.js';
 
-/****************************************** USER **********************************************************/
+/**
+ * Function to perform login and update in-game user data.
+ * Procedurally this:
+ *  - takes credentials from the login screen
+ *  - runs minimal checks on the value of user/password
+ *  - attempts to login and pull saved user data from the server
+ *  - updates in-game user data or displays an error
+ * @param {string} username - if provided, the username to use, else username pulled from HTML form, or default value used.
+ * @param {string} password - if provided, the password to use, else password pulled from HTML form, or default value used.
+ */
 function user(username, password) {
     var d = this;
     this.username = username || $('#username')[0].value || default_username; // only for development
@@ -31,6 +40,11 @@ function user(username, password) {
     });
 }
 
+/**
+ * Simple replacement for the jQuery mobile page selector. Used to toggle between top level 'pages' in the game.
+ * This is limited to pages being defined as <div> immediately under the <body> element
+ * @param {string} pageID - the HTML ID attribute of the <div> element immediately under <body> we wish to switch to.
+ */
 function ChangePage(pageID) {
     document.querySelectorAll('body > div').forEach((page) => {
         // console.log(page);
@@ -45,26 +59,55 @@ function ChangePage(pageID) {
 }
 
 /****************************************** GAME **********************************************************/
-let simulationTime;
+let simulationTime, lastRenderTime;
+const MAX_RENDER_FPS = 60;
 const SIM_DT_MILLISEC = 1000 / 60; //ms
+/**
+ * This is the main game loop.
+ * This is called by the Browser at the device's refresh rate FPS, if sufficient CPU time allows.
+ * It leverages some of the advice from {@link https://gafferongames.com/post/fix_your_timestep/} regarding
+ * the usage of a constant time step in the engine, while allowing for higher or lower FPS, to allow for more
+ * consistent player experience regardless of their computers' CPU/GPU computation abilities.
+ * 
+ * The general flow of the game is to:
+ *  - take in user/ai actions, applying them to the players
+ *    - note: user actions are handled by keyboard/mouse/touch event handlers, not in this loop.
+ *  - advance the physics engine if needed
+ *  - determine the need to render (skipping above a max FPS)
+ *  - perform rendering
+ *  - request the next animation frame
+ * 
+ * @param {number} highResTimerMillisec - fractional millisecond time value from the browser.
+*/
 function GameLoop(highResTimerMillisec) {
+    // apply AI player input
+    GhostControl.DoAction();
+
     // handle ticking the simulation at a fixed interval
     if (simulationTime === undefined) {
         simulationTime = highResTimerMillisec;
     } else {
         while (simulationTime + SIM_DT_MILLISEC <= highResTimerMillisec) {
             // increment simulation by DT
-            world.update(SIM_DT_MILLISEC / 1000); // seconds
+            world.Update(SIM_DT_MILLISEC / 1000); // seconds
             simulationTime += SIM_DT_MILLISEC;
         }
     }
 
-    // apply AI player input
-    GhostControl.DoAction();
+    // skip this frame ?
+    let render_frame = true;
+    if(lastRenderTime === undefined){
+        lastRenderTime = highResTimerMillisec;
+    } else {
+        render_frame =  ((highResTimerMillisec - lastRenderTime) >= (1000/MAX_RENDER_FPS));
+    }
 
     // handle rendering
-    world.draw();
-    MiniMap.Render(highResTimerMillisec);
+    if(render_frame) {
+        lastRenderTime = highResTimerMillisec;
+        world.Draw();
+        MiniMap.Render(highResTimerMillisec);
+    }
 
     // look for termination conditions
     if (world.running) {
@@ -72,17 +115,27 @@ function GameLoop(highResTimerMillisec) {
     }
 }
 
+/**
+ * Entry point to reset/setup the game objects and begin the main game loop
+ */
 function RunGame() {
     MiniMap.Init('minimap', data);
     GhostControl.Reset();
     new Chipmunk2DWorld('game_world');
-    world.reset();
-    world.run();
+    world.Reset();
+    world.Run();
     simulationTime = undefined;
     requestAnimationFrame(GameLoop);
 }
 
-// restart
+/**
+ * Callback function for the various reset/restart buttons in the UI.
+ * It handles:
+ *  - hiding and clearing any of the modal/popup/message elements that appear at game termination.
+ *  - re-enables the ACC/BRAKE buttons.
+ *  - posting user results for this iteration back to the server.
+ *  - re-running the game.
+ */
 function restart() {
     $('#brake').addClass('enabled');
     $('#acc').addClass('enabled');
@@ -150,6 +203,7 @@ $(function () {
         }
     });
 
+    // make up/right trigger ACC. make down/left trigger BRAKE
     $(document).on('keydown', function (e) {
         switch (e.key) {
             case 'ArrowLeft':
@@ -169,6 +223,7 @@ $(function () {
         }
     });
 
+    // make up/right trigger ACC. make down/left trigger BRAKE
     $(document).on('keyup', function (e) {
         switch (e.key) {
             case 'ArrowLeft':
