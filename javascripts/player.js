@@ -1,11 +1,11 @@
-class PlayerCredentials {
+export class PlayerCredentials {
     constructor(user, password) {
         this.username = user;
         this.password = password;
     }
 }
 
-class ServerData {
+export class ServerData {
     constructor() {
         this.credentials = new PlayerCredentials();
         this.bestScore = 0;
@@ -24,7 +24,7 @@ class LocalData {
         this.vehSpeed = 0;
         this.car_posOld = 0;
         this.consumption = 0;
-        this.battstatus = 100;
+        this.battStatus = 100;
 
         // logged data
         this.acc_keys = []; // at what postions did the user press/release accelerator
@@ -35,6 +35,7 @@ class LocalData {
         this.save_x = []; // saved x position of current play
         this.save_v = []; // saved velocity at save_x position
         this.save_eff = []; // saved efficiency at save_x position
+        this.save_batt = []; // saved battery level as save_x position
     }
 }
 
@@ -115,7 +116,7 @@ class Player {
     }
 
     IsBattEmpty() {
-        return this.localData.battstatus < 0.01;
+        return this.localData.battStatus < 0.01;
     }
 
     RecordKey(keyArray) {
@@ -194,14 +195,6 @@ class Player {
         // determine vehicle velocity in MPH
         this.localData.vehSpeed = Math.round(Math.sqrt(Math.pow(chassis.vx, 2) + Math.pow(chassis.vy, 2)) * px2m * 2.23694);
 
-        ////// Log driving data snapshots /////////////
-        if (car_pos > this.localData.car_posOld) {
-            this.localData.car_posOld = car_pos;
-            this.localData.save_x.push(car_pos);
-            this.localData.save_v.push(this.localData.vehSpeed);
-            this.localData.save_eff.push(Math.round(this.localData.motor2eff * 100));
-        }
-
         // TODO: describe what this friction calculation is doing
         let fricImpl =
             (((-1 * fric * (chassis.m + wheel1.m + wheel2.m + motorbar1.m + motorbar2.m) * wheel1.shapeList[0].r) / tstep) * wheel1.w) /
@@ -210,7 +203,7 @@ class Player {
         wheel2.w += fricImpl * wheel2.i_inv;
 
         // update the battery capacity % value
-        this.localData.battstatus = Math.round(1000 - (this.localData.consumption / 3600 / 1000 / max_batt) * 1000) / 10;
+        this.localData.battStatus = Math.round(1000 - (this.localData.consumption / 3600 / 1000 / max_batt) * 1000) / 10;
 
         /////////////////////Motor Control/////////////////////////////////
         if (this.localData.isBraking) {
@@ -254,6 +247,16 @@ class Player {
         }
         ////////////////////////////////////////////////////////////////////////////
 
+        ////// Log driving data snapshots /////////////
+        if (car_pos > this.localData.car_posOld) {
+            this.localData.car_posOld = car_pos;
+            this.localData.save_x.push(car_pos);
+            this.localData.save_v.push(this.localData.vehSpeed);
+            this.localData.save_eff.push(Math.round(this.localData.motor2eff * 100));
+            this.localData.save_batt.push(this.localData.battStatus);
+        }
+        
+        
         // push all the calculated values to the corresponding UI elements.
         this.UpdateUI();
 
@@ -295,7 +298,7 @@ class Player {
         if (this.firendlyName === Player.NAMES.HUMAN) {
             document.getElementById('pbar').value = ((this.localData.car_posOld - 9) / (MAX_DISTANCE - 9)) * 100;
             $('#speedval').html(this.localData.vehSpeed + ' MPH');
-            $('#battval').html(this.localData.battstatus + '%');
+            $('#battval').html(this.localData.battStatus + '%');
 
             let displayVaule = '--';
             if (this.localData.motor2eff != 0) {

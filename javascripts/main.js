@@ -1,8 +1,25 @@
 import * as MiniMap from './game-landscape.js';
 import * as submit from './submit.js';
 import { world, Chipmunk2DWorld } from './game-physics.js';
-import { Players } from './player.js';
+import { Players, PlayerCredentials, ServerData } from './player.js';
 import { GhostControl } from './ghost-control.js';
+
+export const EcoRacerOptions = {
+    SERVER: {
+        USE_LOGIN: false,
+        POST_RESULTS: false,
+    },
+    UI: {
+        ALLOW_GEAR_DESIGN: false,
+    },
+    AI: {
+        ALLOW_AI_PLAYER: true,
+        FEEDBACK_GHOST_CAR: true,
+        FEEDBACK_CHEVRON: true,
+        /** Use null for best answer control, or episode number for less than optimal control */
+        AI_CONTROL_EPISODE: null,
+    },
+};
 
 /**
  * Function to perform login and update in-game user data.
@@ -14,29 +31,31 @@ import { GhostControl } from './ghost-control.js';
  * @param {string} username - if provided, the username to use, else username pulled from HTML form, or default value used.
  * @param {string} password - if provided, the password to use, else password pulled from HTML form, or default value used.
  */
-function user(username, password) {
-    var d = this;
-    this.username = username || $('#username')[0].value || default_username; // only for development
-    this.password = password || $('#password')[0].value || default_password;
+function UserLogin(username, password) {
+    let user = username;// || $('#username')[0].value || default_username; // only for development
+    let pass = password;// || $('#password')[0].value || default_password;
 
-    $.post('/getUser', { username: this.username, password: this.password }, function (response) {
+    $.post('/getUser', { username: user, password: pass }, function (response) {
         if (response === '') {
             $('#message').html("User doesn't exist or password wrong.");
-            setTimeout(function () {
-                $('#message').html('');
-            }, 1500);
-            U = null;
+            setTimeout(function () { $('#message').html(''); }, 1500);
         } else {
-            d.id = response.id;
-            d.name = response.name;
-            d.bestscore = response.bestscore;
+            let data = Players.HUMAN.serverData;
+            data.credentials = new PlayerCredentials(user, pass);
+            data.id = response.id;
+            data.name = response.name;
+            data.bestScore = response.bestscore;
 
-            if (d.bestscore > 0) {
-                $('#myscore').html('My Best Score: ' + Math.round(1000 - (d.bestscore / 3600 / 1000 / max_batt) * 1000) / 10 + '%');
-            } else {
-                $('#myscore').html('My Best Score: --%');
+            let score = '--';
+            if (data.bestScore > 0) {
+                score = Math.round(1000 - (data.bestScore / 3600 / 1000 / max_batt) * 1000) / 10;
             }
+            $('#myscore').html('Best Score: ' + score + '%');
         }
+    })
+    .fail(function(response){
+        $('#message').html("Server error: " + response.statusText);
+        setTimeout(function () { $('#message').html(''); }, 1500);
     });
 }
 
@@ -97,14 +116,14 @@ function GameLoop(highResTimerMillisec) {
 
     // skip this frame ?
     let render_frame = true;
-    if(lastRenderTime === undefined){
+    if (lastRenderTime === undefined) {
         lastRenderTime = highResTimerMillisec;
     } else {
-        render_frame =  ((highResTimerMillisec - lastRenderTime) >= (1000/MAX_RENDER_FPS));
+        render_frame = ((highResTimerMillisec - lastRenderTime) >= (1000 / MAX_RENDER_FPS));
     }
 
     // handle rendering
-    if(render_frame) {
+    if (render_frame) {
         lastRenderTime = highResTimerMillisec;
         world.Draw();
         MiniMap.Draw(highResTimerMillisec);
@@ -145,18 +164,13 @@ function restart() {
     $('#history').html('');
     submit.getBestScore();
     historyDrawn = false;
-    let playerData = world.player.serverData;
-    $.post(
-        '/getUser',
-        {
-            username: playerData.credentials.username,
-            password: playerData.credentials.password
-        },
-        function (response) {
-            playerData.bestscore = response.bestscore;
-            $('#myscore').html('My Best Score: ' + Math.round(1000 - (UserData.bestscore / 3600 / 1000 / max_batt) * 1000) / 10 + '%');
-        }
-    );
+    // TODO: this existing code (user login) is really heavy handed for updating the 
+    // UI with the current best score. The UI should be updated for current best score 
+    // when the game ends, even before submitting results to server.
+    if(EcoRacerOptions.SERVER.USE_LOGIN && EcoRacerOptions.SERVER.POST_RESULTS){
+        let creds = Players.HUMAN.serverData.credentials;
+        UserLogin(creds.username, creds.password);
+    }
     RunGame();
 }
 
@@ -167,40 +181,38 @@ $(function () {
 
     $('#register').on('tap click', function (event) {
         event.preventDefault();
-        if (
-            $('#username')[0].value != 'username' &&
-            $('#username')[0].value != '' &&
-            $('#password')[0].value != 'password' &&
-            $('#password')[0].value != ''
-        ) {
+        let user = $('#username')[0].value;
+        let pass = $('#password')[0].value;
+        if ((user != 'username') && (user != '') && (pass != 'password') && (pass != '')) {
             $.post(
                 '/signup',
                 {
-                    username: $('#username')[0].value,
-                    password: $('#password')[0].value
+                    username: user,
+                    password: pass
                 },
                 function () {
-                    U = new user();
+                    // if signup succeeded, do an immediate login
+                    UserLogin(user, pass);
                 }
-            );
+            )
+            .fail(function(response){
+                $('#message').html("Server error: " + response.statusText);
+                setTimeout(function () { $('#message').html(''); }, 1500);
+            });
         } else {
-            $('#message').html('Username cannot be empty...');
-            setTimeout(function () {
-                $('#message').html('');
-                showRobots();
-            }, 1500);
+            $('#message').html('Username/password not allowed...');
+            setTimeout(function () { $('#message').html(''); }, 1500);
         }
     });
     $('#login').on('tap click', function (event) {
         event.preventDefault();
-        if ($('#username')[0].value != 'username') {
-            U = new user($('#username')[0].value, $('#password')[0].value);
+        let user = $('#username')[0].value;
+        let pass = $('#password')[0].value;
+        if (user != 'username' && user != '') {
+            UserLogin(user, pass);
         } else {
             $('#message').html('Username cannot be empty...');
-            setTimeout(function () {
-                $('#message').html('');
-                showRobots();
-            }, 1500);
+            setTimeout(function () { $('#message').html(''); }, 1500);
         }
     });
 
@@ -326,5 +338,9 @@ $(function () {
         restart();
     });
 
-    ChangePage('intro-page');
+    if (EcoRacerOptions.SERVER.USE_LOGIN) {
+        ChangePage('reg-page');
+    } else {
+        ChangePage('intro-page');
+    }
 });
