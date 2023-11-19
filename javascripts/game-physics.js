@@ -1,8 +1,9 @@
 import { Players } from './player.js';
+import { EcoRacerOptions } from './main.js';
 
 export const scene_widthx = 18800; // ???m
 export const scene_heightx = 280;
- /** @type {Chipmunk2DWorld} */
+/** @type {Chipmunk2DWorld} */
 export var world;
 
 const GRABABLE_MASK_BIT = 1 << 31;
@@ -144,8 +145,10 @@ export class Chipmunk2DWorld {
         let posB = cp.v(110, 0);
         this.boxOffset = cp.v(100, 10);
 
-        this.ai = Players.AI;
-        this.ai.AttachToChipmunk2DWorld(this, posA, posB);
+        if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
+            this.ai = Players.AI;
+            this.ai.AttachToChipmunk2DWorld(this, posA, posB);
+        }
         this.player = Players.HUMAN;
         this.player.AttachToChipmunk2DWorld(this, posA, posB);
 
@@ -230,7 +233,9 @@ export class Chipmunk2DWorld {
      */
     Reset = () => {
         this.player.Reset();
-        this.ai.Reset();
+        if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
+            this.ai.Reset();
+        }
     };
 
     /**
@@ -238,9 +243,9 @@ export class Chipmunk2DWorld {
      * @param {number} dt - the amount of time to advance, in seconds.
      */
     Update = (dt) => {
-        if( ! this.running ) return;
+        if (!this.running) return;
 
-        const SPEED_UP_FACTOR = 60/48; // old code had tick size different from frame rate.
+        const SPEED_UP_FACTOR = 60 / 48; // old code had tick size different from frame rate.
         this.space.step(dt * SPEED_UP_FACTOR);
 
         if (this.simTime === undefined) {
@@ -251,8 +256,9 @@ export class Chipmunk2DWorld {
         $('#timeval').html((MAX_GAME_TIME - this.simTime).toFixed(1));
 
         this.player.UpdateVariables();
-        this.ai.UpdateVariables();
-
+        if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
+            this.ai.UpdateVariables();
+        }
         let car_pos = Math.round(this.player.XPosition() * px2m);
 
         // check for terminating conditions
@@ -332,51 +338,57 @@ export class Chipmunk2DWorld {
         // Setup default styles
         ctx.font = '24px serif';
         ctx.strokeStyle = 'black';
-        
-        // Draw shapes
-        this.space.eachShape((shape) => {
-            // console.log(shape);
-            ctx.save();
-            // console.log(ctx.fillStyle, shape.style);
-            ctx.fillStyle = shape.style;
-            ctx.strokeStyle = ctx.fillStyle;
-            shape.draw(ctx, this.scale, this.Point2Canvas);
-            ctx.restore();
+
+        // Draw non-static bodies
+        this.space.eachBody((body) => {
+            if ((body.render === undefined) || (body.render === true)) {
+                // Draw shapes
+                body.eachShape((shape) => {
+                    ctx.save();
+                    ctx.fillStyle = shape.style;
+                    ctx.strokeStyle = ctx.fillStyle;
+                    shape.draw(ctx, this.scale, this.Point2Canvas);
+                    ctx.restore();
+                });
+            }
         });
 
-        let ai_x_pos = this.ai.XPosition();
-        let player_x_pos = this.player.XPosition();
-        const MIN_POSITION_DIFF = scene_widthx * 0.03; // 3% of the track
-        
-        if( (ai_x_pos - player_x_pos) > MIN_POSITION_DIFF ){
-            // we are too far behind!!!
-            // get position of vehicle body
-            let where = this.Point2Canvas(this.player.chassis.p);
-            where.x -= DISPLACEMENT;
-            // pick a spot above the vehicle
-            ctx.fillText("Hurry UP!!!", where.x - 80, where.y - 40);
-            // pick a spot in front of the vehicle (top of chevron lines)
-            where.x += 50;
-            where.y -= 20;
-            this.#DrawChevrons(where, 10);
-        } else if ((player_x_pos - ai_x_pos) > MIN_POSITION_DIFF){
-            // we are too far ahead!!!
-            let where = this.Point2Canvas(this.player.chassis.p);
-            where.x -= DISPLACEMENT;
-            // pick a spot above the vehicle
-            ctx.fillText("Slow DOWN!!!", where.x - 80, where.y - 40);
-            // pick a spot behind the vehicle (top of chevron lines)
-            where.x -= 50;
-            where.y -= 20;
-            // this.#DrawReverseChevron(where);
-            this.#DrawChevrons(where, -10);
-        }
+        // Draw static body
+        this.space.staticBody.eachShape((shape) => {
+            shape.draw(ctx, this.scale, this.Point2Canvas);
+        });
 
-        // this.space.eachConstraint((c) => {
-            // if (c.draw) {
-            //     c.draw(ctx, this.scale, this.Point2Canvas);
-            // }
-        // });
+        if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
+            if (EcoRacerOptions.AI.FEEDBACK_CHEVRON) {
+                let ai_x_pos = this.ai.XPosition();
+                let player_x_pos = this.player.XPosition();
+                const MIN_POSITION_DIFF = scene_widthx * 0.03; // 3% of the track
+
+                if ((ai_x_pos - player_x_pos) > MIN_POSITION_DIFF) {
+                    // we are too far behind!!!
+                    // get position of vehicle body
+                    let where = this.Point2Canvas(this.player.chassis.p);
+                    where.x -= DISPLACEMENT;
+                    // pick a spot above the vehicle
+                    ctx.fillText("Hurry UP!!!", where.x - 80, where.y - 40);
+                    // pick a spot in front of the vehicle (top of chevron lines)
+                    where.x += 50;
+                    where.y -= 20;
+                    this.#DrawChevrons(where, 10);
+                } else if ((player_x_pos - ai_x_pos) > MIN_POSITION_DIFF) {
+                    // we are too far ahead!!!
+                    let where = this.Point2Canvas(this.player.chassis.p);
+                    where.x -= DISPLACEMENT;
+                    // pick a spot above the vehicle
+                    ctx.fillText("Slow DOWN!!!", where.x - 80, where.y - 40);
+                    // pick a spot behind the vehicle (top of chevron lines)
+                    where.x -= 50;
+                    where.y -= 20;
+                    // this.#DrawReverseChevron(where);
+                    this.#DrawChevrons(where, -10);
+                }
+            }
+        }
     };
 
     /**
@@ -473,7 +485,7 @@ export class Chipmunk2DWorld {
      * @param {cp.Vect} where - where to start drawing
      * @param {number} x_step - the amount of x offset to use, positive leads to right pointing chevron, negative to left pointing.
      */
-    #DrawChevrons = ( where, x_step ) => {
+    #DrawChevrons = (where, x_step) => {
         let ctx = this.ctx;
 
         // prepare to draw
@@ -481,13 +493,13 @@ export class Chipmunk2DWorld {
         ctx.lineWidth = 5;
         // the chevron animation uses a sine function for transparency (alpha)
         // since alpha is in range [0,1], and sin() is [-1,1], we scale and shift the sin() curve.
-        let a = 0.5 + (0.5 * Math.sin(2*Math.PI*(this.alpha_frame/this.frames_per_alpha)));
-        ctx.strokeStyle = 'rgba(255,0,0,'+a+')';
+        let a = 0.5 + (0.5 * Math.sin(2 * Math.PI * (this.alpha_frame / this.frames_per_alpha)));
+        ctx.strokeStyle = 'rgba(255,0,0,' + a + ')';
         this.alpha_frame = (this.alpha_frame + 1) % this.frames_per_alpha;
 
         // draw the 3 chevrons
-        for(let i=0; i<3; i++){
-            where.x += 2*x_step;
+        for (let i = 0; i < 3; i++) {
+            where.x += 2 * x_step;
             ctx.moveTo(where.x, where.y);
             ctx.lineTo(where.x + x_step, where.y + 10);
             ctx.lineTo(where.x, where.y + 20);

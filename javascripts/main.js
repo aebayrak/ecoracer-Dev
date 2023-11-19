@@ -6,17 +6,36 @@ import { GhostControl } from './ghost-control.js';
 
 export const EcoRacerOptions = {
     SERVER: {
+        /**
+         * @type {boolean} Changes the startup screen when loading the site.
+         * true -> login/register page
+         * false -> intro/instructions page
+         */
         USE_LOGIN: false,
+        /**
+         * @type {boolean}
+         * TODO: not hooked
+         */
         POST_RESULTS: false,
     },
     UI: {
+        /**
+         * @type {boolean}
+         * TODO: not hooked
+         */
         ALLOW_GEAR_DESIGN: false,
     },
     AI: {
+        /**
+         * @type {boolean} Run the game solo mode or with an AI player.
+         * Turning this off makes the remaining AI options irrelevant.
+         */
         ALLOW_AI_PLAYER: true,
-        FEEDBACK_GHOST_CAR: true,
-        FEEDBACK_CHEVRON: true,
-        /** Use null for best answer control, or episode number for less than optimal control */
+        /** @type {boolean} enable to show ghost car on the raceway */
+        FEEDBACK_GHOST_CAR: false,
+        /** @type {boolean} enable to show chevrons as hint to speed up or slow down */
+        FEEDBACK_CHEVRON: false,
+        /** @type {null | number} Use null for best answer control, or episode number for less than optimal control */
         AI_CONTROL_EPISODE: null,
     },
 };
@@ -100,8 +119,10 @@ const SIM_DT_MILLISEC = 1000 / 60; //ms
  * @param {number} highResTimerMillisec - fractional millisecond time value from the browser.
 */
 function GameLoop(highResTimerMillisec) {
-    // apply AI player input
-    GhostControl.DoAction();
+    if( EcoRacerOptions.AI.ALLOW_AI_PLAYER ){
+        // apply AI player input
+        GhostControl.DoAction();
+    }
 
     // handle ticking the simulation at a fixed interval
     if (simulationTime === undefined) {

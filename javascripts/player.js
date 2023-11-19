@@ -1,3 +1,5 @@
+import { EcoRacerOptions } from "./main.js";
+
 export class PlayerCredentials {
     constructor(user, password) {
         this.username = user;
@@ -135,8 +137,17 @@ class Player {
         this.wheel1 = scene.AddWheel(posA);
         this.wheel2 = scene.AddWheel(posB);
 
-        let joint1 = new cp.GrooveJoint(this.chassis, this.wheel1, cp.v(-30, -10), cp.v(-30, -20), cp.v(0, 0));
+        // mark the body as hidden or not, to help simplify the rendering later.
+        let hidden = ((this === Players.AI) && (false === EcoRacerOptions.AI.FEEDBACK_GHOST_CAR))
+        this.chassis.render = !hidden;
+        this.motorbar1.render = !hidden;
+        this.motorbar2.render = !hidden;
+        this.motorbar3.render = !hidden;
+        this.motorbar4.render = !hidden;
+        this.wheel1.render = !hidden;
+        this.wheel2.render = !hidden;
 
+        let joint1 = new cp.GrooveJoint(this.chassis, this.wheel1, cp.v(-30, -10), cp.v(-30, -20), cp.v(0, 0));
         let joint2 = new cp.GrooveJoint(this.chassis, this.wheel2, cp.v(30, -10), cp.v(30, -20), cp.v(0, 0));
 
         scene.space.addConstraint(joint1);

@@ -1,4 +1,5 @@
 import { world, scene_widthx } from './game-physics.js';
+import { EcoRacerOptions } from './main.js';
 
 let ctx, canvas, elevationPoints, position;
 
@@ -47,14 +48,16 @@ export const Draw = function () {
         ctx.lineTo(x_pos, MAX_Y);
         ctx.stroke();
 
-        // show the AI position
-        ctx.beginPath();
-        position = world.ai.XPosition();
-        ctx.strokeStyle = world.ai.carColor;
-        x_pos = MIN_X + x_scale * (position / scene_widthx);
-        ctx.moveTo(x_pos, MIN_Y);
-        ctx.lineTo(x_pos, MAX_Y);
-        ctx.stroke();
+        if(EcoRacerOptions.AI.ALLOW_AI_PLAYER){
+            // show the AI position
+            ctx.beginPath();
+            position = world.ai.XPosition();
+            ctx.strokeStyle = world.ai.carColor;
+            x_pos = MIN_X + x_scale * (position / scene_widthx);
+            ctx.moveTo(x_pos, MIN_Y);
+            ctx.lineTo(x_pos, MAX_Y);
+            ctx.stroke();
+        }
     }
 };
 
