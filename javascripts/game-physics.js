@@ -1,9 +1,17 @@
-import { Players } from './player.js';
-import { EcoRacerOptions } from './main.js';
+/**
+ * This module primarily encapsulates the ChipmunkJS physics simulation engine.
+ * This handles physics calculations in 2D space that involve mass, speed, friction, and gravity.
+ * Engine torque and battery capacity are handled in the Player module.
+ */
 
+import { EcoRacerOptions } from './main.js';
+import { Players } from './player.js'; 
+
+// The 2D simulation world dimensions
 export const scene_widthx = 18800; // ???m
 export const scene_heightx = 280;
-/** @type {Chipmunk2DWorld} */
+
+/** @type {Chipmunk2DWorld} This is the globally accessible reference for this module */
 export var world;
 
 const GRABABLE_MASK_BIT = 1 << 31;
@@ -14,15 +22,7 @@ const MARGIN = 175; // how much of a margin between the player and the left edge
 
 const MAX_GAME_TIME = 36; // 30s
 
-const xstep = 200;
-let ground = [];
-let gndShape = [];
-let finishFlag = [];
-let finishShape = [];
-
 /// Station Parameters ////
-// var stationShape = [];
-// var station = [];
 // var stationPosX = [17 * 200];
 // var stationPosY = [0];
 // var stationData = [30, 120, 20, 10];
@@ -32,7 +32,25 @@ let finishShape = [];
 //////////////////////////
 
 
-// **** Draw methods for Shapes
+/**
+ * The next few functions are defining rendering calls on the Shape
+ * 'objects' within Chimpunk library. This library predates JavaScript classes,
+ * so we use the term objects and inheritance loosely.
+ * These rending calls could be defined anywhere, this is simply following 
+ * the approach provided in the demo code that the chipmunk library comes with.
+ */
+/**
+ * A method to convert Chipmunk coordinates to Canvas coordinates
+ * @callback pt2can
+ * @param {cp.Vect} chipmunkXY
+ * @returns {cp.Vect} canvasXY
+ */
+/**
+ * Render a PolyShape
+ * @param {CanvasRenderingContext2D} ctx the context to draw onto
+ * @param {number} scale a scaling factor, not used here, but kept for making all darw() funcs the same
+ * @param { pt2can } point2canvas a function to convert a set of coordinates from chipmunk to the canvas
+ */
 cp.PolyShape.prototype.draw = function (ctx, scale, point2canvas) {
     ctx.beginPath();
 
@@ -59,6 +77,12 @@ cp.PolyShape.prototype.draw = function (ctx, scale, point2canvas) {
     ctx.stroke();
 };
 
+/**
+ * Render a SegmentShape
+ * @param {CanvasRenderingContext2D} ctx the context to draw onto
+ * @param {number} scale a scaling factor, not used here, but kept for making all darw() funcs the same
+ * @param { pt2can } point2canvas a function to convert a set of coordinates from chipmunk to the canvas
+ */
 cp.SegmentShape.prototype.draw = function (ctx, scale, point2canvas) {
     let a = point2canvas(this.ta);
     let b = point2canvas(this.tb);
@@ -74,6 +98,12 @@ cp.SegmentShape.prototype.draw = function (ctx, scale, point2canvas) {
     ctx.stroke();
 };
 
+/**
+ * Render a CircleShape
+ * @param {CanvasRenderingContext2D} ctx the context to draw onto
+ * @param {number} scale a scaling factor, not used here, but kept for making all darw() funcs the same
+ * @param { pt2can } point2canvas a function to convert a set of coordinates from chipmunk to the canvas
+ */
 cp.CircleShape.prototype.draw = function (ctx, scale, point2canvas) {
     let c = point2canvas(this.tc);
     ctx.beginPath();
@@ -122,22 +152,21 @@ export class Chipmunk2DWorld {
      */
     constructor(canvas_id) {
         // Core components
-        this.space = new cp.Space();
         this.canvas = document.getElementById(canvas_id);
         this.ctx = this.canvas.getContext('2d');
-
+        
         // Resize
-        // this.canvas.width = this.width = scene_widthx / 15;
-        // this.canvas.height = this.height = (scene_heightx * 2) / 3;
         this.canvas.width = this.width = scene_widthx / 12;
         this.canvas.height = this.height = scene_heightx;
         this.scale = 1.0;
         this.resized = true;
-
+        
+        this.space = new cp.Space();
         this.space.iterations = 10;
         this.space.gravity = cp.v(0, -400);
         this.space.sleepTimeThreshold = 100;
 
+        let xstep = 200; // this distance between consecutive elevation data points
         this.#AddGround(data, scene_widthx, xstep);
         this.#AddFinishLine(scene_widthx - 3 * xstep);
 
@@ -415,20 +444,20 @@ export class Chipmunk2DWorld {
     #AddGround = (data, scene_widthx, xstep) => {
         // add provided track data
         for (var i = 0; i < scene_widthx / xstep - 3; i++) {
-            gndShape[i] = new cp.SegmentShape(this.space.staticBody, cp.v(i * xstep, data[i]), cp.v((i + 1) * xstep, data[i + 1]), 0);
-            ground[i] = this.space.addShape(gndShape[i]);
-            ground[i].setElasticity(0);
-            ground[i].setFriction(0.1);
-            ground[i].layers = NOT_GRABABLE_MASK;
+            let shape = new cp.SegmentShape(this.space.staticBody, cp.v(i * xstep, data[i]), cp.v((i + 1) * xstep, data[i + 1]), 0);
+            shape.setElasticity(0);
+            shape.setFriction(0.1);
+            shape.layers = NOT_GRABABLE_MASK;
+            this.space.addShape(shape);
         }
 
         // extra floor to complete the scene
         for (var j = i; j < i + 6; j++) {
-            gndShape[j] = new cp.SegmentShape(this.space.staticBody, cp.v(j * xstep, data[i]), cp.v((j + 1) * xstep, data[i + 1]), 0);
-            ground[j] = this.space.addShape(gndShape[j]);
-            ground[j].setElasticity(0);
-            ground[j].setFriction(0.1);
-            ground[j].layers = NOT_GRABABLE_MASK;
+            let shape = new cp.SegmentShape(this.space.staticBody, cp.v(j * xstep, data[i]), cp.v((j + 1) * xstep, data[i + 1]), 0);
+            shape.setElasticity(0);
+            shape.setFriction(0.1);
+            shape.layers = NOT_GRABABLE_MASK;
+            this.space.addShape(shape);
         }
     };
 
@@ -437,10 +466,10 @@ export class Chipmunk2DWorld {
      * @param {number} distance - the X position, in engine coordinates, to place the finish line at.
      */
     #AddFinishLine = (distance) => {
-        finishShape[0] = new cp.SegmentShape(this.space.staticBody, cp.v(distance, 0), cp.v(distance, scene_heightx), 0);
-        finishFlag[0] = this.space.addShape(finishShape[0]);
-        finishFlag[0].flag = true;
-        finishFlag[0].sensor = true;
+        let shape = new cp.SegmentShape(this.space.staticBody, cp.v(distance, 0), cp.v(distance, scene_heightx), 0);
+        shape.flag = true;
+        shape.sensor = true;
+        this.space.addShape(shape);
     };
 
     /**
@@ -451,30 +480,32 @@ export class Chipmunk2DWorld {
     #AddStation = (distance, elevation) => {
         var space = this.space;
         var staticBody = space.staticBody;
-        /*stationShape[0] = new cp.BoxShape(staticBody, stationData[2], stationData[3], cp.v(distance,45));
-        station[0] = space.addShape(stationShape[0]);
-        station[0].flag = true;
-        station[0].sensor = true;*/
+        let station;
+        /* station = new cp.BoxShape(staticBody, stationData[2], stationData[3], cp.v(distance,45));
+        station.flag = true;
+        station.sensor = true;
+        space.addShape(station);
+        */
 
-        stationShape[0] = new cp.CircleShape(staticBody, 10, cp.v(distance, elevation + 40));
-        station[0] = space.addShape(stationShape[0]);
-        station[0].flag = true;
-        station[0].sensor = true;
+        station = new cp.CircleShape(staticBody, 10, cp.v(distance, elevation + 40));
+        station.flag = true;
+        station.sensor = true;
+        space.addShape(station);
 
-        stationShape[0] = new cp.CircleShape(staticBody, 2, cp.v(distance + 5, elevation + 40));
-        station[0] = space.addShape(stationShape[0]);
-        //station[0].flag = true;
-        station[0].sensor = true;
+        station = new cp.CircleShape(staticBody, 2, cp.v(distance + 5, elevation + 40));
+        //station.flag = true;
+        station.sensor = true;
+        space.addShape(station);
 
-        stationShape[0] = new cp.CircleShape(staticBody, 2, cp.v(distance - 5, elevation + 40));
-        station[0] = space.addShape(stationShape[0]);
-        //station[0].flag = true;
-        station[0].sensor = true;
+        station = new cp.CircleShape(staticBody, 2, cp.v(distance - 5, elevation + 40));
+        //station.flag = true;
+        station.sensor = true;
+        space.addShape(station);
 
-        stationShape[0] = new cp.BoxShape(staticBody, stationData[0], stationData[1], cp.v(distance, elevation));
-        station[0] = space.addShape(stationShape[0]);
-        station[0].flag = true;
-        station[0].sensor = true;
+        station = new cp.BoxShape(staticBody, stationData[0], stationData[1], cp.v(distance, elevation));
+        station.flag = true;
+        station.sensor = true;
+        space.addShape(station);
     };
 
     frames_per_alpha = 60;

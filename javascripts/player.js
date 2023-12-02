@@ -1,4 +1,7 @@
 import { EcoRacerOptions } from "./main.js";
+import { maxTrqlerp, efflerp } from "./drivetrain-model.js";
+
+const tstep = SIMULATION_STEPS_PER_SECOND;
 
 export class PlayerCredentials {
     constructor(user, password) {
@@ -14,7 +17,7 @@ export class ServerData {
     }
 }
 
-class LocalData {
+class ClientData {
     constructor() {
         // user controlled data
         this.isAccelerating = false;
@@ -29,7 +32,7 @@ class LocalData {
         this.battStatus = 100;
 
         // logged data
-        this.acc_keys = []; // at what postions did the user press/release accelerator
+        this.acc_keys = []; // at what positions did the user press/release accelerator
         this.brake_keys = []; // at what positions did the user press/release brake
 
         // the next three variables are snapshot at the same distance interval as a triplet
@@ -46,7 +49,7 @@ class Player {
         this.firendlyName = name;
         this.carColor = color;
         this.serverData = new ServerData();
-        this.localData = new LocalData();
+        this.localData = new ClientData();
     }
 
     static NAMES = {
@@ -55,7 +58,7 @@ class Player {
     };
 
     Reset() {
-        this.localData = new LocalData();
+        this.localData = new ClientData();
         this.wheel1moment = this.Jw1;
         this.wheel2moment = this.Jw2;
         this.wheel1.setMoment(this.wheel1moment);
@@ -180,7 +183,7 @@ class Player {
         this.wheel2.setMoment(this.wheel2moment);
 
         // limits
-        let speed_limit = ((9200 * pi) / 30 / fr) * this.wheel1.shapeList[0].r * t2t; // Max motor speed is 9000 but 9200 gives better results.
+        let speed_limit = ((9200 * Math.PI) / 30 / fr) * this.wheel1.shapeList[0].r * t2t; // Max motor speed is 9000 but 9200 gives better results.
         this.wheel1.v_limit = speed_limit;
         this.wheel1.v_limit = speed_limit;
         this.wheel1.w_limit = (speed_limit / this.wheel1.shapeList[0].r) * 1.5; // This 1.5 has to be here! (experimental)
@@ -267,11 +270,8 @@ class Player {
             this.localData.save_batt.push(this.localData.battStatus);
         }
         
-        
         // push all the calculated values to the corresponding UI elements.
         this.UpdateUI();
-
-        // lockScroll();
     }
 
     UpdateConsumption(consumption) {
@@ -281,7 +281,7 @@ class Player {
         let motor2 = this.motor2;
 
         //motor1speed = -1*wheel1.w/t2t*fr/2/Math.PI*60; //RPM;
-        let motor1speed = (((Math.sqrt(Math.pow(chassis.vx, 2) + Math.pow(chassis.vy, 2)) / wheel1.shapeList[0].r / t2t) * fr) / pi) * 30;
+        let motor1speed = (((Math.sqrt(Math.pow(chassis.vx, 2) + Math.pow(chassis.vy, 2)) / wheel1.shapeList[0].r / t2t) * fr) / Math.PI) * 30;
         //motor2speed = -1*wheel2.w/t2t*fr/2/Math.PI*60; //RPM;
         let motor2speed = motor1speed;
         let maxTrq1 = (maxTrqlerp(motor1speed) / m2m / px2m / px2m) * t2t * t2t; //Nm
@@ -293,11 +293,11 @@ class Player {
         // TODO: why are these formulas different?
         this.localData.motor1eff = efflerp(motor1speed, motor1torque) || 0;
         this.localData.motor2eff = efflerp(Math.abs(motor2speed), -1 * Math.abs(motor2torque)) || 0;
-        let con1 = (((motor1torque / tstep) * motor1speed * pi) / 30) * this.localData.motor1eff;
+        let con1 = (((motor1torque / tstep) * motor1speed * Math.PI) / 30) * this.localData.motor1eff;
         if (Math.abs(con1) > 216000) {
             con1 = 1000;
         }
-        let con2 = (((motor2torque / tstep) * motor2speed * pi) / 30) * this.localData.motor2eff;
+        let con2 = (((motor2torque / tstep) * motor2speed * Math.PI) / 30) * this.localData.motor2eff;
         if (Math.abs(con2) > 216000) {
             con2 = 1000;
         }

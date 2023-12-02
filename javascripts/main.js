@@ -1,8 +1,8 @@
 import * as MiniMap from './game-landscape.js';
 import * as submit from './submit.js';
 import { world, Chipmunk2DWorld } from './game-physics.js';
-import { Players, PlayerCredentials, ServerData } from './player.js';
 import { GhostControl } from './ghost-control.js';
+import { Players, PlayerCredentials } from './player.js';
 
 export const EcoRacerOptions = {
     SERVER: {
@@ -32,9 +32,9 @@ export const EcoRacerOptions = {
          */
         ALLOW_AI_PLAYER: true,
         /** @type {boolean} enable to show ghost car on the raceway */
-        FEEDBACK_GHOST_CAR: false,
+        FEEDBACK_GHOST_CAR: true,
         /** @type {boolean} enable to show chevrons as hint to speed up or slow down */
-        FEEDBACK_CHEVRON: false,
+        FEEDBACK_CHEVRON: true,
         /** @type {null | number} Use null for best answer control, or episode number for less than optimal control */
         AI_CONTROL_EPISODE: null,
     },
@@ -99,8 +99,7 @@ function ChangePage(pageID) {
 
 /****************************************** GAME **********************************************************/
 let simulationTime, lastRenderTime;
-const MAX_RENDER_FPS = 60;
-const SIM_DT_MILLISEC = 1000 / 60; //ms
+const SIM_DT_MILLISEC = 1000 / SIMULATION_STEPS_PER_SECOND; //ms
 /**
  * This is the main game loop.
  * This is called by the Browser at the device's refresh rate FPS, if sufficient CPU time allows.
