@@ -162,7 +162,7 @@ function GameLoop(highResTimerMillisec) {
  * Entry point to reset/setup the game objects and begin the main game loop
  */
 function RunGame() {
-    MiniMap.Init('minimap', data);
+    MiniMap.Init('#minimap', data);
     GhostControl.Reset();
     new Chipmunk2DWorld('game_world');
     world.Reset();

@@ -5,6 +5,7 @@
 import { Players } from './player.js';
 
 // hardcoded solution, each point is good for 5 distance intervals on the scale of 0-910
+const BEST_EPISODE_NUMBER = 81;
 const BEST_ACTION = [
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
     0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, -1, 0, 1, 0, 1, 0, 0, 0, 1, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0,
@@ -12,21 +13,27 @@ const BEST_ACTION = [
     0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -1, 0, 0, 0, -1, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, 0, -1, 0, -1, -1, -1,
     -1, -1, -1, 0, -1, -1
 ];
-const BEST_EPISODE_NUMBER = 81;
 
 let actions = BEST_ACTION;
+let lastAction = undefined;
 
 const ACCELERATE = 1;
 const DO_NOTHING = 0;
 const BRAKE = -1;
 
-let lastAction;
-
 export const GhostControl = {
+    /**
+     * Call this at the conclusion of each race to prepare for the next race.
+     */
     Reset: () => {
         lastAction = undefined;
     },
 
+    /**
+     * Use the AI actions dataset to control the AI/ghost car.
+     * Based on the AI player's current position, an actions is determined from the dataset.
+     * If the action differs from the previous invocation, it is applied to the AI player.
+     */
     DoAction: () => {
         let distance = Players.AI.XPosition() * px2m;
 
@@ -39,7 +46,7 @@ export const GhostControl = {
 
         let action = actions[Math.floor(distance / ACTION_SCALE)];
 
-        if (lastAction != action) {
+        if (lastAction !== action) {
             lastAction = action;
             switch (action) {
                 case ACCELERATE:
@@ -60,6 +67,10 @@ export const GhostControl = {
         }
     },
 
+    /**
+     * Request an AI episode's data to use for controlling the ghost vehicle.
+     * @param {number} episodeNumber the episode number to use.
+     */
     LoadFromServer: (episodeNumber = BEST_EPISODE_NUMBER) => {
         console.log('loading episode ', episodeNumber);
         // TODO: import JSON formatted data via GET request from the server.

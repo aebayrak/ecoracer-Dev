@@ -5,7 +5,7 @@
  */
 
 import { EcoRacerOptions } from './main.js';
-import { Players } from './player.js'; 
+import { Players } from './player.js';
 
 // The 2D simulation world dimensions
 export const scene_widthx = 18800; // ???m
@@ -154,13 +154,13 @@ export class Chipmunk2DWorld {
         // Core components
         this.canvas = document.getElementById(canvas_id);
         this.ctx = this.canvas.getContext('2d');
-        
+
         // Resize
         this.canvas.width = this.width = scene_widthx / 12;
         this.canvas.height = this.height = scene_heightx;
         this.scale = 1.0;
         this.resized = true;
-        
+
         this.space = new cp.Space();
         this.space.iterations = 10;
         this.space.gravity = cp.v(0, -400);
@@ -508,7 +508,6 @@ export class Chipmunk2DWorld {
         space.addShape(station);
     };
 
-    frames_per_alpha = 60;
     alpha_frame = 0;
 
     /**
@@ -517,6 +516,7 @@ export class Chipmunk2DWorld {
      * @param {number} x_step - the amount of x offset to use, positive leads to right pointing chevron, negative to left pointing.
      */
     #DrawChevrons = (where, x_step) => {
+        const frames_per_alpha = 60;
         let ctx = this.ctx;
 
         // prepare to draw
@@ -524,9 +524,9 @@ export class Chipmunk2DWorld {
         ctx.lineWidth = 5;
         // the chevron animation uses a sine function for transparency (alpha)
         // since alpha is in range [0,1], and sin() is [-1,1], we scale and shift the sin() curve.
-        let a = 0.5 + (0.5 * Math.sin(2 * Math.PI * (this.alpha_frame / this.frames_per_alpha)));
+        let a = 0.5 + (0.5 * Math.sin(2 * Math.PI * (this.alpha_frame / frames_per_alpha)));
         ctx.strokeStyle = 'rgba(255,0,0,' + a + ')';
-        this.alpha_frame = (this.alpha_frame + 1) % this.frames_per_alpha;
+        this.alpha_frame = ++this.alpha_frame % frames_per_alpha;
 
         // draw the 3 chevrons
         for (let i = 0; i < 3; i++) {

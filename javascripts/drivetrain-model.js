@@ -83,8 +83,17 @@ export function efflerp(spd, trq) {
     return efflerpp;
 };
 
+/**
+ * Encapsulate the capacity constant and formula to convert consumption to capacity percentage.
+ */
 export class Battery {
     static TOTAL_CAPACITY = 0.55; // Change this value
+    /**
+     * Given a total consumption value in Watts, calculate the remaining battery capacity percentage
+     * @param {number} consumed the total Watts consumed
+     * @param {number} numDecimals the number of decimals to preserve, e.g. 2 for 91.03%, 0 for 91%
+     * @returns {number} a value representing the remaining battery percentage.
+     */
     static Consumption2Percentage ( consumed = 0, numDecimals = 0) {
         const Watt2kW = 1/1000;
         const Watt2Wh = 1/3600;

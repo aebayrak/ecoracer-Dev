@@ -73,11 +73,11 @@ export const Draw = function () {
 
 /**
  * Prepare this module to render the landscape (minimap)
- * @param {string} id the id attribute of an HTML Canvas to use for rendering
+ * @param {string} selector the CSS selector of an HTML Canvas to use for rendering
  * @param {Array<number>} elevationData the dataset for elevation. values range from 0-100 and each point is equidistant.
  */
-export const Init = function (id, elevationData) {
-    canvas = document.getElementById(id);
+export const Init = function (selector, elevationData) {
+    canvas = document.querySelector(selector);
     ctx = canvas.getContext('2d');
     // setup the canvas number of pixels to something large so it scales without much pixelation when CSS scaling is done.
     canvas.width = 2000;
