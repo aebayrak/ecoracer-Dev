@@ -98,7 +98,9 @@ function ChangePage(pageID) {
 }
 
 /****************************************** GAME **********************************************************/
-let simulationTime, lastRenderTime;
+let simulationTime = 0;
+let lastRenderTime = 0;
+let historyDrawn = false;
 const SIM_DT_MILLISEC = 1000 / SIMULATION_STEPS_PER_SECOND; //ms
 /**
  * This is the main game loop.
@@ -124,7 +126,7 @@ function GameLoop(highResTimerMillisec) {
     }
 
     // handle ticking the simulation at a fixed interval
-    if (simulationTime === undefined) {
+    if (simulationTime === undefined || simulationTime === 0) {
         simulationTime = highResTimerMillisec;
     } else {
         while (simulationTime + SIM_DT_MILLISEC <= highResTimerMillisec) {
@@ -136,7 +138,7 @@ function GameLoop(highResTimerMillisec) {
 
     // skip this frame ?
     let render_frame = true;
-    if (lastRenderTime === undefined) {
+    if (lastRenderTime === undefined || lastRenderTime === 0) {
         lastRenderTime = highResTimerMillisec;
     } else {
         render_frame = ((highResTimerMillisec - lastRenderTime) >= (1000 / MAX_RENDER_FPS));

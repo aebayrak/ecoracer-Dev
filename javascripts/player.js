@@ -2,7 +2,8 @@ import { EcoRacerOptions } from "./main.js";
 import { gear_ratio } from './design.js'
 import { maxTrqlerp, efflerp } from "./drivetrain-model.js";
 
-const tstep = SIMULATION_STEPS_PER_SECOND;
+const TIME_STEP = SIMULATION_STEPS_PER_SECOND;
+const FRICTION = 2.8;
 
 export class PlayerCredentials {
     constructor(user, password) {
@@ -212,7 +213,7 @@ class Player {
 
         // TODO: describe what this friction calculation is doing
         let fricImpl =
-            (((-1 * fric * (chassis.m + wheel1.m + wheel2.m + motorbar1.m + motorbar2.m) * wheel1.shapeList[0].r) / tstep) * wheel1.w) /
+            (((-1 * FRICTION * (chassis.m + wheel1.m + wheel2.m + motorbar1.m + motorbar2.m) * wheel1.shapeList[0].r) / TIME_STEP) * wheel1.w) /
             (Math.abs(wheel1.w) + 0.0001);
         wheel1.w += fricImpl * wheel1.i_inv;
         wheel2.w += fricImpl * wheel2.i_inv;
@@ -289,16 +290,16 @@ class Player {
         let maxTrq2 = (maxTrqlerp(motor2speed) / m2m / px2m / px2m) * t2t * t2t; //Nm
         motor1.maxForce = maxTrq1 * gear_ratio;
         motor2.maxForce = maxTrq2 * gear_ratio;
-        let motor1torque = (-1 * Math.min((motor1.jAcc * tstep) / gear_ratio, maxTrq1) * m2m * px2m * px2m) / t2t / t2t;
-        let motor2torque = (-1 * Math.min((motor2.jAcc * tstep) / gear_ratio, maxTrq2) * m2m * px2m * px2m) / t2t / t2t;
+        let motor1torque = (-1 * Math.min((motor1.jAcc * TIME_STEP) / gear_ratio, maxTrq1) * m2m * px2m * px2m) / t2t / t2t;
+        let motor2torque = (-1 * Math.min((motor2.jAcc * TIME_STEP) / gear_ratio, maxTrq2) * m2m * px2m * px2m) / t2t / t2t;
         // TODO: why are these formulas different?
         this.localData.motor1eff = efflerp(motor1speed, motor1torque) || 0;
         this.localData.motor2eff = efflerp(Math.abs(motor2speed), -1 * Math.abs(motor2torque)) || 0;
-        let con1 = (((motor1torque / tstep) * motor1speed * Math.PI) / 30) * this.localData.motor1eff;
+        let con1 = (((motor1torque / TIME_STEP) * motor1speed * Math.PI) / 30) * this.localData.motor1eff;
         if (Math.abs(con1) > 216000) {
             con1 = 1000;
         }
-        let con2 = (((motor2torque / tstep) * motor2speed * Math.PI) / 30) * this.localData.motor2eff;
+        let con2 = (((motor2torque / TIME_STEP) * motor2speed * Math.PI) / 30) * this.localData.motor2eff;
         if (Math.abs(con2) > 216000) {
             con2 = 1000;
         }
