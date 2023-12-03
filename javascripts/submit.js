@@ -1,5 +1,6 @@
 import { Players } from './player.js';
 import { gear_ratio } from './design.js';
+import { Battery } from './drivetrain-model.js';
 
 export function submitResult(c) {
     // get date
@@ -13,7 +14,7 @@ export function submitResult(c) {
             ranking_percentage = Math.round((parseInt(data[0].count) / total_num_user) * 100) || 0;
             $('#textmessage').html(
                 'You saved ' +
-                    Math.round(100 - (c / 3600 / 1000 / max_batt) * 100) +
+                    Battery.Consumption2Percentage(c) +
                     " % of energy, that's better than " +
                     ranking_percentage +
                     '% of plays!'
@@ -31,7 +32,7 @@ export function submitResult(c) {
                                 "<div class='score'>" +
                                     count +
                                     '. ' +
-                                    Math.round(1000 - (score[i] / 3600 / 1000 / max_batt) * 1000) / 10 +
+                                    Battery.Consumption2Percentage(score[i], 1) +
                                     '%, FR=' +
                                     frall[i] +
                                     '<div>'
@@ -41,7 +42,7 @@ export function submitResult(c) {
                                 "<div class='score'>" +
                                     count +
                                     '. ' +
-                                    Math.round(1000 - (c / 3600 / 1000 / max_batt) * 1000) / 10 +
+                                    Battery.Consumption2Percentage(c, 1) +
                                     '% (YOU), FR=' +
                                     gear_ratio +
                                     '<div>'
@@ -57,7 +58,7 @@ export function submitResult(c) {
                         "<div class='score'>" +
                             (score.length + 1) +
                             '. ' +
-                            Math.round(1000 - (c / 3600 / 1000 / max_batt) * 1000) / 10 +
+                            Battery.Consumption2Percentage(c, 1) +
                             '% (YOU), FR=' +
                             gear_ratio +
                             '<div>'
@@ -90,7 +91,7 @@ export function submitResult(c) {
                     "<div class='score'>" +
                         i +
                         '. ' +
-                        Math.round(1000 - (score[i] / 3600 / 1000 / max_batt) * 1000) / 10 +
+                        Battery.Consumption2Percentage(score[i], 1) +
                         '%, FR=' +
                         frall[i] +
                         '<div>'
@@ -152,7 +153,7 @@ export function getAllPerformance() {
             if (d.score < 0) {
                 score = 0;
             } else {
-                score = Math.round(1000 - (d.score / 3600 / 1000 / max_batt) * 1000) / 10;
+                score = Battery.Consumption2Percentage(d.score, 1);
             }
             if (typeof best_p[d.userid] != 'undefined') {
                 if (score > best_p[d.userid]) {
@@ -275,11 +276,11 @@ export function plot(d, i) {
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .text(
-            Math.round(1000 - (d.score / 3600 / 1000 / max_batt) * 1000) / 10 +
-                ' from user: ' +
-                d.userid +
-                ' with finaldrive: ' +
-                d.finaldrive
+            Battery.Consumption2Percentage(d.score, 1) +
+            ' from user: ' +
+            d.userid +
+            ' with finaldrive: ' +
+            d.finaldrive
         );
 }
 

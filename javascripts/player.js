@@ -1,6 +1,6 @@
 import { EcoRacerOptions } from "./main.js";
 import { gear_ratio } from './design.js'
-import { maxTrqlerp, efflerp } from "./drivetrain-model.js";
+import { maxTrqlerp, efflerp, Battery } from "./drivetrain-model.js";
 
 const TIME_STEP = SIMULATION_STEPS_PER_SECOND;
 const FRICTION = 2.8;
@@ -219,7 +219,7 @@ class Player {
         wheel2.w += fricImpl * wheel2.i_inv;
 
         // update the battery capacity % value
-        this.localData.battStatus = Math.round(1000 - (this.localData.consumption / 3600 / 1000 / max_batt) * 1000) / 10;
+        this.localData.battStatus = Battery.Consumption2Percentage(this.localData.consumption, 1);
 
         /////////////////////Motor Control/////////////////////////////////
         if (this.localData.isBraking) {

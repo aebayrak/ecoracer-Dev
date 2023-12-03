@@ -3,6 +3,7 @@ import * as submit from './submit.js';
 import { world, Chipmunk2DWorld } from './game-physics.js';
 import { GhostControl } from './ghost-control.js';
 import { Players, PlayerCredentials } from './player.js';
+import { Battery } from './drivetrain-model.js';
 
 export const EcoRacerOptions = {
     SERVER: {
@@ -67,7 +68,7 @@ function UserLogin(username, password) {
 
             let score = '--';
             if (data.bestScore > 0) {
-                score = Math.round(1000 - (data.bestScore / 3600 / 1000 / max_batt) * 1000) / 10;
+                score = Battery.Consumption2Percentage(data.bestScore, 1)
             }
             $('#myscore').html('Best Score: ' + score + '%');
         }

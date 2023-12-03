@@ -34,7 +34,7 @@ export function maxTrqlerp(spd) {
         maxTrq = 200;
     }
     return maxTrq;
-}
+};
 
 /**
  * obtain the instantaneous efficiency of the vehicle drivetrain.
@@ -81,4 +81,15 @@ export function efflerp(spd, trq) {
     }
     
     return efflerpp;
-}
+};
+
+export class Battery {
+    static TOTAL_CAPACITY = 0.55; // Change this value
+    static Consumption2Percentage ( consumed = 0, numDecimals = 0) {
+        const Watt2kW = 1/1000;
+        const Watt2Wh = 1/3600;
+        const FRACTION = consumed * Watt2Wh * Watt2kW / this.TOTAL_CAPACITY;
+        const PWR10 = Math.pow(10, numDecimals);
+        return Math.round(PWR10 * 100 * (1 - FRACTION)) / PWR10;
+    }
+};
