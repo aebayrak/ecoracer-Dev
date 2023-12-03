@@ -9,45 +9,45 @@ var mousedown = false;
 
 function initialize_design(){
 	$("#finaldrivetext").html("<a>Final Drive Ratio: "+fr + "</a><br><a>Swipe to tune</a>");
-	var width = $("#canvas_gear").width(),
-    	height = $("#canvas_gear").height(),
-    	radius = 50,
-    	x = Math.sin(2 * Math.PI / 3),
-    	y = Math.cos(2 * Math.PI / 3);
+	var width = $("#canvas_gear").width();
+	var height = $("#canvas_gear").height();
+	var radius = 50;
+	// var x = Math.sin(2 * Math.PI / 3);
+	// var y = Math.cos(2 * Math.PI / 3);
 
-	var offset = 0,
-	    speed = 4,
-	    start = Date.now();
+	// var offset = 0,
+	// 	speed = 4,
+	// 	start = Date.now();
 	
 	var svg = d3.select("#canvas_gear").append("svg")
-	    .attr("width", width)
-	    .attr("height", height)
-	  .append("g")
-	    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(.90)")
-	  .append("g");
+		.attr("width", width)
+		.attr("height", height)
+	.append("g")
+		.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(.90)")
+	.append("g");
 	
 	gear_frame = svg.append("g")
-	    .datum({radius: Infinity});
+		.datum({radius: Infinity});
 
 	gear_frame.append("g")
-	    .attr("class", "sun")
-	    .attr("transform", "translate(0," + radius * 1.5 + ")")
-	    .datum({teeth: 16, radius: radius})
-	  .append("path")
-	    .attr("d", gear);
+		.attr("class", "sun")
+		.attr("transform", "translate(0," + radius * 1.5 + ")")
+		.datum({teeth: 16, radius: radius})
+	.append("path")
+		.attr("d", gear);
 	
 	gear_frame.append("g")
-	    .attr("class", "planet")
-	    .attr("transform", "translate(0,-" + radius * 1.5 + ")")
-	    .datum({teeth: 32, radius: -radius * 2})
-	  .append("path")
-	    .attr("d", gear);
+		.attr("class", "planet")
+		.attr("transform", "translate(0,-" + radius * 1.5 + ")")
+		.datum({teeth: 32, radius: -radius * 2})
+	.append("path")
+		.attr("d", gear);
 	
 	$("#finaldrive").on('touchstart',function(e){
 		touch_x = e.originalEvent.touches[0].pageX;
 		touch_y = e.originalEvent.touches[0].pageY;
 	});
-	$("#finaldrive").mousedown(function(e){
+	$("#finaldrive").on('mousedown', function(e){
 		touch_x = e.pageX;
 		touch_y = e.pageY;
 		mousedown = true;
@@ -56,31 +56,31 @@ function initialize_design(){
 		fr = Math.max(Math.min(MAX_FINALDRIVE, (e.originalEvent.touches[0].pageY - touch_y)*0.1+fr),MIN_FINALDRIVE);
 		fr = Math.round(fr);
 		$("#finaldrivetext").html("<a>Final Drive Ratio: "+fr+"</a><br><a>Swipe to tune</a>");
-	    $(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(fr-25)) + ")");
-	    $(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(fr-25)) + ")");
+		$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(fr-25)) + ")");
+		$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(fr-25)) + ")");
 		touch_x = e.originalEvent.touches[0].pageX;
 		touch_y = e.originalEvent.touches[0].pageY;
 	});
-	$("#finaldrive").mousemove(function(e){
+	$("#finaldrive").on('mousemove', function(e){
 		if(mousedown){
 			fr = Math.max(Math.min(MAX_FINALDRIVE, (e.pageY - touch_y)*0.1+fr),MIN_FINALDRIVE);
 			fr = Math.round(fr);
 			$("#finaldrivetext").html("<a>Final Drive Ratio: "+fr+"</a><br><a>Swipe to tune</a>");
-		    $(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(fr-25)) + ")");
-		    $(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(fr-25)) + ")");
+			$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(fr-25)) + ")");
+			$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(fr-25)) + ")");
 			touch_x = e.pageX;
 			touch_y = e.pageY;			
 		}
 	});
-	$("body").mouseup(function(e){
+	$("body").on('mouseup', function(){
 		mousedown = false;
-	})
+	});
 	
 	d3.timer(function() {
-		  var angle = (Date.now() - gear_time_start) * gear_speed,
-		      transform = function(d) { return "rotate(" + angle / d.radius + ")"; };
-		  gear_frame.selectAll("path").attr("transform", transform);
-		  gear_frame.attr("transform", transform); // frame of reference
+		var angle = (Date.now() - gear_time_start) * gear_speed,
+			transform = function(d) { return "rotate(" + angle / d.radius + ")"; };
+		gear_frame.selectAll("path").attr("transform", transform);
+		gear_frame.attr("transform", transform); // frame of reference
 		});
 }
 
