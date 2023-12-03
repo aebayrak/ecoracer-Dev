@@ -1,4 +1,15 @@
+/**
+ * This module handles design space variables for EcoRacer.
+ * At this time, the only design parameter is the final gear ratio.
+ * 
+ * With respect to final gear ratio, this module:
+ *  - exports the gear ratio variable.
+ *  - handles events for the UI elements in the gear ratio design page.
+ */
+
 /************************ DESIGN INTERFACE **********************************************/
+export var gear_ratio = 18; // final drive ratio
+
 var MAX_FINALDRIVE = 40.0;
 var MIN_FINALDRIVE = 10.0;
 var touch_x, touch_y;
@@ -7,8 +18,16 @@ var gear_speed = 1.0;
 var gear_frame;
 var mousedown = false;
 
-function initialize_design(){
-	$("#finaldrivetext").html("<a>Final Drive Ratio: "+fr + "</a><br><a>Swipe to tune</a>");
+/**
+ * This function creates the UI within existing HTML elements, attaches event handlers, and
+ * begins the gear animation timer.
+ * The HTML elements used are:
+ *  #canvas_gear for the svg
+ *  #finaldrive for event handling of user interactions
+ *  #finaldrivetext for text feedback and status
+ */
+export function initialize_design(){
+	$("#finaldrivetext").html("<a>Final Drive Ratio: "+gear_ratio + "</a><br><a>Swipe to tune</a>");
 	var width = $("#canvas_gear").width();
 	var height = $("#canvas_gear").height();
 	var radius = 50;
@@ -53,21 +72,21 @@ function initialize_design(){
 		mousedown = true;
 	});
 	$("#finaldrive").on('touchmove',function(e){
-		fr = Math.max(Math.min(MAX_FINALDRIVE, (e.originalEvent.touches[0].pageY - touch_y)*0.1+fr),MIN_FINALDRIVE);
-		fr = Math.round(fr);
-		$("#finaldrivetext").html("<a>Final Drive Ratio: "+fr+"</a><br><a>Swipe to tune</a>");
-		$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(fr-25)) + ")");
-		$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(fr-25)) + ")");
+		gear_ratio = Math.max(Math.min(MAX_FINALDRIVE, (e.originalEvent.touches[0].pageY - touch_y)*0.1+gear_ratio),MIN_FINALDRIVE);
+		gear_ratio = Math.round(gear_ratio);
+		$("#finaldrivetext").html("<a>Final Drive Ratio: "+gear_ratio+"</a><br><a>Swipe to tune</a>");
+		$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(gear_ratio-25)) + ")");
+		$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(gear_ratio-25)) + ")");
 		touch_x = e.originalEvent.touches[0].pageX;
 		touch_y = e.originalEvent.touches[0].pageY;
 	});
 	$("#finaldrive").on('mousemove', function(e){
 		if(mousedown){
-			fr = Math.max(Math.min(MAX_FINALDRIVE, (e.pageY - touch_y)*0.1+fr),MIN_FINALDRIVE);
-			fr = Math.round(fr);
-			$("#finaldrivetext").html("<a>Final Drive Ratio: "+fr+"</a><br><a>Swipe to tune</a>");
-			$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(fr-25)) + ")");
-			$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(fr-25)) + ")");
+			gear_ratio = Math.max(Math.min(MAX_FINALDRIVE, (e.pageY - touch_y)*0.1+gear_ratio),MIN_FINALDRIVE);
+			gear_ratio = Math.round(gear_ratio);
+			$("#finaldrivetext").html("<a>Final Drive Ratio: "+gear_ratio+"</a><br><a>Swipe to tune</a>");
+			$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(gear_ratio-25)) + ")");
+			$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(gear_ratio-25)) + ")");
 			touch_x = e.pageX;
 			touch_y = e.pageY;			
 		}
@@ -84,14 +103,25 @@ function initialize_design(){
 		});
 }
 
-function gear(d) {
-  var n = d.teeth,
-      r2 = Math.abs(d.radius),
+/**
+ * @typedef {Object} GearDefinition
+ * @property {number} teeth the number of teeth on the gear
+ * @property {number} radius the radius of the gear
+ * @property {boolean} annulus indicate the presence of an outer ring gear 
+ */
+/**
+ * Return an SVG path segment representing a gear given the values for # of teeth, radius, and annulus.
+ * @param {GearDefinition} definition the desired gear attributes 
+ * @returns {string} text containing the SVG path for the desired gear.
+ */
+function gear(definition) {
+  var n = definition.teeth,
+      r2 = Math.abs(definition.radius),
       r0 = r2 - 8,
       r1 = r2 + 8,
-      r3 = d.annulus ? (r3 = r0, r0 = r1, r1 = r3, r2 + 20) : 20,
+      r3 = definition.annulus ? (r3 = r0, r0 = r1, r1 = r3, r2 + 20) : 20,
       da = Math.PI / n,
-      a0 = -Math.PI / 2 + (d.annulus ? Math.PI / n : 0),
+      a0 = -Math.PI / 2 + (definition.annulus ? Math.PI / n : 0),
       i = -1,
       path = ["M", r0 * Math.cos(a0), ",", r0 * Math.sin(a0)];
   while (++i < n) path.push(

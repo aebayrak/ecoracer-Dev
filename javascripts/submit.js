@@ -1,4 +1,5 @@
 import { Players } from './player.js';
+import { gear_ratio } from './design.js';
 
 export function submitResult(c) {
     // get date
@@ -42,7 +43,7 @@ export function submitResult(c) {
                                     '. ' +
                                     Math.round(1000 - (c / 3600 / 1000 / max_batt) * 1000) / 10 +
                                     '% (YOU), FR=' +
-                                    fr +
+                                    gear_ratio +
                                     '<div>'
                             );
                             ranking_scoreboard = count;
@@ -58,7 +59,7 @@ export function submitResult(c) {
                             '. ' +
                             Math.round(1000 - (c / 3600 / 1000 / max_batt) * 1000) / 10 +
                             '% (YOU), FR=' +
-                            fr +
+                            gear_ratio +
                             '<div>'
                     );
                 }
@@ -72,7 +73,7 @@ export function submitResult(c) {
                     acc: UserData.acc_keys,
                     brake: UserData.brake_keys
                 }),
-                finaldrive: fr,
+                finaldrive: gear_ratio,
                 ranking_percentage: ranking_percentage,
                 ranking_scoreboard: ranking_scoreboard
             });
@@ -104,7 +105,7 @@ export function submitResult(c) {
                 acc: UserData.acc_keys,
                 brake: UserData.brake_keys
             }),
-            finaldrive: fr,
+            finaldrive: gear_ratio,
             ranking_percentage: ranking_percentage,
             ranking_scoreboard: ranking_scoreboard
         });

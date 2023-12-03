@@ -1,4 +1,5 @@
 import { EcoRacerOptions } from "./main.js";
+import { gear_ratio } from './design.js'
 import { maxTrqlerp, efflerp } from "./drivetrain-model.js";
 
 const tstep = SIMULATION_STEPS_PER_SECOND;
@@ -183,7 +184,7 @@ class Player {
         this.wheel2.setMoment(this.wheel2moment);
 
         // limits
-        let speed_limit = ((9200 * Math.PI) / 30 / fr) * this.wheel1.shapeList[0].r * t2t; // Max motor speed is 9000 but 9200 gives better results.
+        let speed_limit = ((9200 * Math.PI) / 30 / gear_ratio) * this.wheel1.shapeList[0].r * t2t; // Max motor speed is 9000 but 9200 gives better results.
         this.wheel1.v_limit = speed_limit;
         this.wheel1.v_limit = speed_limit;
         this.wheel1.w_limit = (speed_limit / this.wheel1.shapeList[0].r) * 1.5; // This 1.5 has to be here! (experimental)
@@ -280,16 +281,16 @@ class Player {
         let motor1 = this.motor1;
         let motor2 = this.motor2;
 
-        //motor1speed = -1*wheel1.w/t2t*fr/2/Math.PI*60; //RPM;
-        let motor1speed = (((Math.sqrt(Math.pow(chassis.vx, 2) + Math.pow(chassis.vy, 2)) / wheel1.shapeList[0].r / t2t) * fr) / Math.PI) * 30;
-        //motor2speed = -1*wheel2.w/t2t*fr/2/Math.PI*60; //RPM;
+        //motor1speed = -1*wheel1.w/t2t*gear_ratio/2/Math.PI*60; //RPM;
+        let motor1speed = (((Math.sqrt(Math.pow(chassis.vx, 2) + Math.pow(chassis.vy, 2)) / wheel1.shapeList[0].r / t2t) * gear_ratio) / Math.PI) * 30;
+        //motor2speed = -1*wheel2.w/t2t*gear_ratio/2/Math.PI*60; //RPM;
         let motor2speed = motor1speed;
         let maxTrq1 = (maxTrqlerp(motor1speed) / m2m / px2m / px2m) * t2t * t2t; //Nm
         let maxTrq2 = (maxTrqlerp(motor2speed) / m2m / px2m / px2m) * t2t * t2t; //Nm
-        motor1.maxForce = maxTrq1 * fr;
-        motor2.maxForce = maxTrq2 * fr;
-        let motor1torque = (-1 * Math.min((motor1.jAcc * tstep) / fr, maxTrq1) * m2m * px2m * px2m) / t2t / t2t;
-        let motor2torque = (-1 * Math.min((motor2.jAcc * tstep) / fr, maxTrq2) * m2m * px2m * px2m) / t2t / t2t;
+        motor1.maxForce = maxTrq1 * gear_ratio;
+        motor2.maxForce = maxTrq2 * gear_ratio;
+        let motor1torque = (-1 * Math.min((motor1.jAcc * tstep) / gear_ratio, maxTrq1) * m2m * px2m * px2m) / t2t / t2t;
+        let motor2torque = (-1 * Math.min((motor2.jAcc * tstep) / gear_ratio, maxTrq2) * m2m * px2m * px2m) / t2t / t2t;
         // TODO: why are these formulas different?
         this.localData.motor1eff = efflerp(motor1speed, motor1torque) || 0;
         this.localData.motor2eff = efflerp(Math.abs(motor2speed), -1 * Math.abs(motor2torque)) || 0;

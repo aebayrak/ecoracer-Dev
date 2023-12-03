@@ -16,7 +16,6 @@ const MAX_DISTANCE = 909;
 const px2m = 1 / 20; // 1 pixel == 1/20 meter
 const m2m = 500; // 1 mass in game to 500 kg
 const  t2t = 1; // 1 time step == 1/120 second
-var fr = 18; // final drive ratio
 
 function messagebox(msg, win) {
 	$("#messagebox").show();

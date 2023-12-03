@@ -43,9 +43,9 @@ var Stats = function () {
 
         begin: function () {
             setInterval(function () {
-                //				var sig = Math.round(motorbar3.w*motor3.jAcc*60/fr*m2m*px2m*px2m/t2t/t2t);
+                //				var sig = Math.round(motorbar3.w*motor3.jAcc*60/gear_ratio*m2m*px2m*px2m/t2t/t2t);
                 var sig = Math.round(consumption / 3600) / 1000;
-                //				var sig = Math.round(Math.abs(motor3.jAcc*60/fr*m2m*px2m*px2m/t2t/t2t));
+                //				var sig = Math.round(Math.abs(motor3.jAcc*60/gear_ratio*m2m*px2m*px2m/t2t/t2t));
                 //				var sig = Math.round(Math.abs(max_power3/Math.max(0,motorbar3.w)));
                 sigMin = 0;
                 sigMax = 4.4 * 2; // 2 * Prius battery 4.4kwh
