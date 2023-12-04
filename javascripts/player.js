@@ -1,10 +1,14 @@
 import { EcoRacerOptions } from "./main.js";
 import { gear_ratio } from './design.js'
 import { maxTrqlerp, efflerp, Battery } from "./drivetrain-model.js";
+import { Chipmunk2DWorld } from "./game-physics.js";
 
 const TIME_STEP = SIMULATION_STEPS_PER_SECOND;
 const FRICTION = 2.8;
 
+/**
+ * Class to hold login credentials
+ */
 export class PlayerCredentials {
     constructor(user, password) {
         this.username = user;
@@ -12,6 +16,9 @@ export class PlayerCredentials {
     }
 }
 
+/**
+ * Class to hold player's data returned at login from the server
+ */
 export class ServerData {
     constructor() {
         this.credentials = new PlayerCredentials();
@@ -19,19 +26,22 @@ export class ServerData {
     }
 }
 
+/**
+ * Class to hold variables maintained within the browser. 
+ */
 class ClientData {
     constructor() {
         // user controlled data
-        this.isAccelerating = false;
-        this.isBraking = false;
+        this.isAccelerating = false; // is the user pressing accelerator pedal
+        this.isBraking = false; // is the user pressing brake pedal
 
         // calculated realtime values
-        this.motor1eff = 0;
-        this.motor2eff = 0;
-        this.vehSpeed = 0;
-        this.car_posOld = 0;
-        this.consumption = 0;
-        this.battStatus = 100;
+        this.motor1eff = 0; // efficiency of motor 1
+        this.motor2eff = 0; // efficiency of motor 2
+        this.vehSpeed = 0; // the vehicle's speed
+        this.car_posOld = 0; // the vehicle's last recorded x distance
+        this.consumption = 0; // the amount of battery power consumed
+        this.battStatus = 100; // the remaining battery percentage
 
         // logged data
         this.acc_keys = []; // at what positions did the user press/release accelerator
@@ -46,7 +56,27 @@ class ClientData {
     }
 }
 
+/**
+ * This class represents a player in the EcoRacer game. A player represents both
+ * the user and a vehicle instantiation in the chipmunk engine.
+ * 
+ * Through the Player object, GUI / AI input can drive the vehicle using the functions
+ * @function PressAccelerator(), @function ReleaseAccelerator(), @function PressBrake(), and @function ReleaseBrake()
+ * 
+ * To synchronize with the physics engine simulation, player objects should update their internal variables in lockstep.
+ * @function UpdateVariables() should be called for each physics engine time step, with a matching time step size.
+ * The Player object handles converting player control actions (accelerate and decelerate) into wattage, which is then
+ * used to update the vehicle's battery. It also applies the expected torque forces to the motor constraints in the engine.
+ * 
+ * This object can create and add shapes to the physics engine representing its vehicle, and update UI elements in the DOM
+ * with relevant data points like battery, speed, and the overall progress bar.
+ */
 class Player {
+    /**
+     * Create a player with given name and vehicle color
+     * @param {string} name player name
+     * @param {string} color a string containing CSS style color.
+     */
     constructor(name, color) {
         this.firendlyName = name;
         this.carColor = color;
@@ -59,6 +89,9 @@ class Player {
         AI: 'ai'
     };
 
+    /**
+     * Call this in between race iterations
+     */
     Reset() {
         this.localData = new ClientData();
         this.wheel1moment = this.Jw1;
@@ -67,6 +100,9 @@ class Player {
         this.wheel2.setMoment(this.wheel2moment);
     }
 
+    /**
+     * Stop the vehicle's motion in the physics engine.
+     */
     SuspendVehicle() {
         this.motor1.rate = 0;
         this.motor2.rate = 0;
@@ -78,18 +114,31 @@ class Player {
         this.localData.isBraking = false;
     }
 
+    /**
+     * @returns The player's X position in the engine's coordinates
+     */
     XPosition() {
         return Math.round(this.chassis.p.x);
     }
 
+    /**
+     * @returns The player's Y position in the engine's coordinates
+     */
     YPosition() {
         return Math.round(this.chassis.p.y);
     }
 
+    /**
+     * Set the vehicle's behavior to acceleration for future time steps
+     */
     PressAccelerator() {
         this.localData.isAccelerating = true;
         this.RecordKey(this.localData.acc_keys);
     }
+
+    /**
+     * Set the vehicle's behavior to coasting for future time steps
+     */
     ReleaseAccelerator() {
         this.localData.isAccelerating = false;
         this.RecordKey(this.localData.acc_keys);
@@ -102,6 +151,10 @@ class Player {
         this.wheel1.setMoment(this.wheel1moment);
         this.wheel2.setMoment(this.wheel2moment);
     }
+
+    /**
+     * Set the vehicle's behavior to stopping for future time steps
+     */
     PressBrake() {
         this.localData.isBraking = true;
         // implement brake override safety feature?
@@ -109,6 +162,9 @@ class Player {
         this.RecordKey(this.localData.brake_keys);
     }
 
+    /**
+     * Set the vehicle's behavior to coasting for future time steps
+     */
     ReleaseBrake() {
         this.localData.isBraking = false;
         this.RecordKey(this.localData.brake_keys);
@@ -122,10 +178,21 @@ class Player {
         this.wheel2.setMoment(this.wheel2moment);
     }
 
+    /**
+     * @returns if the battery is empty
+     */
     IsBattEmpty() {
         return this.localData.battStatus < 0.01;
     }
 
+    /**
+     * Log the current X position into the action array passed in.
+     * 
+     * The way existing code logs, for example, pressing the accelerator at position 9, releasing at position 15, then press 
+     * again at 21, and release at 50, is to create the array [9, 15, 21, 50].
+     * effectively each pair of numbers represent a duration for which a specific event happens.
+     * @param {Array<number>} keyArray 
+     */
     RecordKey(keyArray) {
         let xp = this.XPosition();
         if (xp != keyArray[keyArray.length - 1]) {
@@ -133,6 +200,13 @@ class Player {
         }
     }
 
+    /**
+     * Create and add the body, shape, and constraint objects representing the player's vehicle
+     * into the physics engine
+     * @param {Chipmunk2DWorld} scene the world to add the vehicle
+     * @param {cp.Vect} posA the location to place the front wheel
+     * @param {cp.Vect} posB the location to place the rear wheel
+     */
     AttachToChipmunk2DWorld(scene, posA, posB) {
         this.chassis = scene.AddChassis(cp.v(80, 10), this.carColor);
         let motorbar1 = (this.motorbar1 = scene.AddBar(posA));
@@ -194,6 +268,12 @@ class Player {
         motorbar2.w_limit = this.wheel2.w_limit;
     }
 
+    /**
+     * This is where all the internal variables are updated, and then forces resulting from player accelerate/decelerate
+     * are fed back into the physics engine as updates to the 'motor' objects.
+     
+    * Important: This should be called in lockstep with the advancement in the physics engine.
+     */
     UpdateVariables() {
         // shortcuts
         let chassis = this.chassis;
@@ -276,6 +356,11 @@ class Player {
         this.UpdateUI();
     }
 
+    /**
+     * Helper function to calculate the updated battery consumption based on current speed and time step.
+     * @param { number } consumption the total consumed Watts prior to this time step
+     * @returns { number } the total consumed Watts after this time step
+     */
     UpdateConsumption(consumption) {
         let chassis = this.chassis;
         let wheel1 = this.wheel1;
@@ -307,6 +392,9 @@ class Player {
         return consumption;
     }
 
+    /**
+     * Helper function to update game UI with speed, battery, and track progress.
+     */
     UpdateUI() {
         if (this.firendlyName === Player.NAMES.HUMAN) {
             document.getElementById('pbar').value = ((this.localData.car_posOld - 9) / (MAX_DISTANCE - 9)) * 100;
@@ -322,6 +410,9 @@ class Player {
     }
 }
 
+/**
+ * List of instantiated players to export for other modules to use.
+ */
 export const Players = {
     HUMAN: new Player(Player.NAMES.HUMAN, 'black'),
     AI: new Player(Player.NAMES.AI, 'lightgrey')
