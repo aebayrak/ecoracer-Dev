@@ -104,6 +104,7 @@ function ChangePage(pageID) {
  * @param {boolean} win 
  */
 function messagebox(msg, win = true) {
+    ChangePage('popup-page');
 	$("#messagebox").show();
 	$("#textmessage").html(msg);
 	$("#acc").removeClass("activated");
@@ -200,6 +201,7 @@ function RunGame() {
     world.Reset();
     world.Run();
     simulationTime = undefined;
+    ChangePage('home-page');
     requestAnimationFrame(GameLoop);
 }
 
@@ -375,7 +377,6 @@ $(function () {
             $('#brake').removeClass('locked');
             $('#acc').removeClass('locked');
             submit.getBestScore();
-            ChangePage('home-page');
             RunGame();
         });
     });

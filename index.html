@@ -11,14 +11,13 @@
         <meta name="viewport" content="width=device-width" charset="utf-8">
     </head>
     <body>
-        <!-- ################ Screen when Device is Not Landscape ################# -->
+        <!-- ################ Page when Device is Not Landscape ################# -->
         <div id="rotate-page" class="center_panel portrait">
             <h1>Rotate Device to Landscape</h1>
             <img src="images/landscape.png" alt="rotate device" style="height: 175px; width: 240px;" />
         </div>
 
-        <!-- ### Register Page Disabled -->
-        <!-- ################ Register/Login Interface ################# -->
+        <!-- ################ Register/Login Page ################# -->
         <div id="reg-page" class="landscape hidden">
             <div id="regframe">
                 <div id="title">ecoRacer </div>
@@ -33,7 +32,7 @@
             </div>
         </div>
 
-        <!-- ################ Initial Screen for Intro ################# -->
+        <!-- ################ Intro Page ################# -->
         <div id="intro-page" class="landscape hidden">
             <h1>EcoRacer Game Intro</h1>
             <h2>Objectives</h2>
@@ -44,68 +43,67 @@
             <h2>* Tap to start *</h2>
         </div>
 
-        <!-- ################ Game Interface ################# -->
+        <!-- ################ Game Play Page ################# -->
         <div id="home-page" class="landscape hidden">
-            <!-- ################ Driving Screen ################# -->
-            <div id="driving-screen" style="position: fixed; width: 100%; height: 100%;">
-                <div id="brake-container" class="left_panel">
-                    <div id="BrakeText">
-                        <h2>Brake</h2>
-                    </div>
-                    <div id="brake" class="round-button locked">B</div>
+            <div id="brake-container" class="left_panel">
+                <div id="BrakeText">
+                    <h2>Brake</h2>
                 </div>
-                <div id="acc-container" class="right_panel">
-                    <div id="AccText">
-                        <h2>Accelerate</h2>
-                    </div>
-                    <div id="acc" class="round-button locked">A</div>
-                </div>
-                <div id="driving-info-bar" class="top_panel" >
-                    <div id="info-bar" class="flexrow">
-                        <div class="flexrow">
-                            <img src="images/gauge.svg" alt="speedgauge" class="status-icon" />
-                            <span id="speedval">0 MPH</span>
-                        </div>
-                        <div class="flexrow">
-                            <img src="images/stopwatch.svg" alt="stopwatch" class="status-icon" />
-                            <span id="timeval"></span>
-                        </div>
-                        <div class="flexrow">
-                            <img src="images/battery-bolt.svg" alt="battery" class="status-icon" />
-                            <span id="battval"></span>
-                            <!-- <span id="effval"></span> -->
-                        </div>
-                        <div class="flexrow">
-                            <div id="myscore"></div>
-                            <!-- ######## Design Screen Disabled ########## -->
-                            <!-- ##### fr is set to 18 in extra.js ######## -->
-                            <!--<div id="designbutton" class="round-button"></div>-->
-                            <div id="resetbutton" class="round-button"></div>
-                            <span>Restart</span>
-                        </div>
-                    </div>
-                    <progress id="pbar" max="100" value="0"></progress>
-                </div>
-                
-                <div id="wrapper" class="center_panel">
-                    <canvas id="game_world"></canvas>
-                    <div id="history"></div>
-                    <div id="messagebox">
-                        <div id="textmessage"></div>
-                        <div id="ok">OK</div>
-                        <div id="restart">TRY AGAIN</div>
-                        <div id="review">STATS</div>
-                    </div>
-                    <div id="scorebox"></div>
-                </div>
-                
-                <div id="track-view" class="bottom_panel">
-                    <canvas id="minimap"></canvas>
-                </div>
+                <div id="brake" class="round-button locked">B</div>
             </div>
-
+            <div id="acc-container" class="right_panel">
+                <div id="AccText">
+                    <h2>Accelerate</h2>
+                </div>
+                <div id="acc" class="round-button locked">A</div>
+            </div>
+            <div id="driving-info-bar" class="top_panel" >
+                <div id="info-bar" class="flexrow">
+                    <div class="flexrow">
+                        <img src="images/gauge.svg" alt="speedgauge" class="status-icon" />
+                        <span id="speedval">0 MPH</span>
+                    </div>
+                    <div class="flexrow">
+                        <img src="images/stopwatch.svg" alt="stopwatch" class="status-icon" />
+                        <span id="timeval"></span>
+                    </div>
+                    <div class="flexrow">
+                        <img src="images/battery-bolt.svg" alt="battery" class="status-icon" />
+                        <span id="battval"></span>
+                        <!-- <span id="effval"></span> -->
+                    </div>
+                    <div class="flexrow">
+                        <div id="myscore"></div>
+                        <!-- ######## Design Screen Disabled ########## -->
+                        <!-- ##### fr is set to 18 in extra.js ######## -->
+                        <!--<div id="designbutton" class="round-button"></div>-->
+                        <div id="resetbutton" class="round-button"></div>
+                        <span>Restart</span>
+                    </div>
+                </div>
+                <progress id="pbar" max="100" value="0"></progress>
+            </div>
+            
+            <div id="wrapper" class="center_panel">
+                <canvas id="game_world"></canvas>
+            </div>
+            
+            <div id="track-view" class="bottom_panel">
+                <canvas id="minimap"></canvas>
+            </div>
         </div>
-        <!-- ################ Design Screen ################# -->
+        <!-- ################ Popup Page ################# -->
+        <div id="popup-page" class="landscape hidden center_panel">
+            <div id="history"></div>
+            <div id="messagebox">
+                <div id="textmessage"></div>
+                <div id="ok">OK</div>
+                <div id="restart">TRY AGAIN</div>
+                <div id="review">STATS</div>
+            </div>
+            <div id="scorebox"></div>
+        </div>
+        <!-- ################ Design Page ################# -->
         <div id="design-page" class="landscape hidden">
             <div id="finaldrive">
                 <div id="finaldrivetext"></div>
