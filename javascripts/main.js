@@ -2,7 +2,7 @@ import * as MiniMap from './game-landscape.js';
 import * as submit from './submit.js';
 import { world, Chipmunk2DWorld } from './game-physics.js';
 import { GhostControl } from './ghost-control.js';
-import { Players, PlayerCredentials } from './player.js';
+import { Players, PlayerCredentials, Player } from './player.js';
 import { Battery } from './drivetrain-model.js';
 
 export const EcoRacerOptions = {
@@ -98,6 +98,30 @@ function ChangePage(pageID) {
     });
 }
 
+/**
+ * Function to render an end of game popup message box
+ * @param {string} msg 
+ * @param {boolean} win 
+ */
+function messagebox(msg, win = true) {
+	$("#messagebox").show();
+	$("#textmessage").html(msg);
+	$("#acc").removeClass("activated");
+	$("#brake").removeClass("activated");
+	$("#acc").removeClass("enabled");
+	$("#brake").removeClass("enabled");
+    $("#scorebox").show();
+    $("#review").show();
+	if (win) {
+		$("#ok").show();
+		$("#restart").hide();
+	}
+	else {
+		$("#ok").hide();
+		$("#restart").show();
+	}
+}
+
 /****************************************** GAME **********************************************************/
 let simulationTime = 0;
 let lastRenderTime = 0;
@@ -155,6 +179,14 @@ function GameLoop(highResTimerMillisec) {
     // look for termination conditions
     if (world.running) {
         requestAnimationFrame(GameLoop);
+    } else {
+        if( world.playerFinished ){
+            messagebox(world.message, true);
+            submit.submitResult(true, Players.HUMAN);
+        } else {
+            messagebox(world.message, false);
+            submit.submitResult(false, Players.HUMAN);
+        }
     }
 }
 

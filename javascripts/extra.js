@@ -11,26 +11,3 @@ const MAX_DISTANCE = 909;
 const px2m = 1 / 20; // 1 pixel == 1/20 meter
 const m2m = 500; // 1 mass in game to 500 kg
 const  t2t = 1; // 1 time step == 1/120 second
-
-function messagebox(msg, win) {
-	$("#messagebox").show();
-	$("#textmessage").html(msg);
-	$("#acc").removeClass("enabled");
-	$("#brake").removeClass("enabled");
-	$("#acc").removeClass("activated");
-	$("#brake").removeClass("activated");
-	if (win) {
-		$("#scorebox").show();
-		$("#ok").show();
-		$("#restart").hide();
-		$("#review").show();
-		// submitResult(consumption);
-	}
-	else {
-		$("#scorebox").show();
-		$("#ok").hide();
-		$("#restart").show();
-		$("#review").show();
-		// submitResult(-1);
-	}
-}

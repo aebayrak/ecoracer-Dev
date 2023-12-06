@@ -71,7 +71,7 @@ class ClientData {
  * This object can create and add shapes to the physics engine representing its vehicle, and update UI elements in the DOM
  * with relevant data points like battery, speed, and the overall progress bar.
  */
-class Player {
+export class Player {
     /**
      * Create a player with given name and vehicle color
      * @param {string} name player name

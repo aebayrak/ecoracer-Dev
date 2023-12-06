@@ -1,15 +1,30 @@
-import { Players } from './player.js';
+import { Players, Player } from './player.js';
 import { gear_ratio } from './design.js';
 import { Battery } from './drivetrain-model.js';
 
-export function submitResult(c) {
-    // get date
-    var date = new Date();
+let total_num_user = 1;
+const userData = {
+    id: '',
+    acc_keys: [],
+    brake_keys: []
+};
+let score = [];
+let frall = [];
+
+/**
+ * Update list of top scores and post player data to the server
+ * @param {boolean} successful if the player finished the track in time with some battery to spare
+ * @param {Player} player the player object containing all the logged keys and data points
+ */
+export function submitResult(successful, player) {
     var ranking_percentage = 0;
     var ranking_scoreboard = -1;
-    if (c > 0) {
+    userData.id = player.serverData.credentials.username;
+    userData.acc_keys = player.localData.acc_keys;
+    userData.brake_keys = player.localData.brake_keys;
+    if (successful) {
         // successful
-        c = Math.round(c);
+        let c = Math.round(player.localData.consumption);
         $.post('/getscore', { score: c }, function (data) {
             ranking_percentage = Math.round((parseInt(data[0].count) / total_num_user) * 100) || 0;
             $('#textmessage').html(
@@ -68,11 +83,11 @@ export function submitResult(c) {
 
             // post results
             $.post('/adddata', {
-                userid: UserData.id,
+                userid: userData.id,
                 score: c,
                 keys: JSON.stringify({
-                    acc: UserData.acc_keys,
-                    brake: UserData.brake_keys
+                    acc: userData.acc_keys,
+                    brake: userData.brake_keys
                 }),
                 finaldrive: gear_ratio,
                 ranking_percentage: ranking_percentage,
@@ -81,7 +96,7 @@ export function submitResult(c) {
         });
     } else {
         // failed
-        c = -1;
+        let c = -1;
         // show top 5 scores
         $('#scorebox').empty();
         $('#scorebox').append('TOP SCORES');
@@ -100,11 +115,11 @@ export function submitResult(c) {
         }
         // post results
         $.post('/adddata', {
-            userid: UserData.id,
+            userid: userData.id,
             score: c,
             keys: JSON.stringify({
-                acc: UserData.acc_keys,
-                brake: UserData.brake_keys
+                acc: userData.acc_keys,
+                brake: userData.brake_keys
             }),
             finaldrive: gear_ratio,
             ranking_percentage: ranking_percentage,
@@ -114,9 +129,6 @@ export function submitResult(c) {
 }
 
 export function getBestScore() {
-    let total_num_user = 0;
-    let score = [];
-    let frall = [];
     $.get('/bestscore', {}, function (data) {
         score = data.bestscore;
         frall = data.finaldrive;
@@ -124,7 +136,6 @@ export function getBestScore() {
     });
 }
 
-var userData;
 export function getResults() {
     var d, i;
     $.post('/getresults', { n: 10 }, function (data) {
@@ -207,7 +218,7 @@ export function plot(d, i) {
         brake = brake_copy;
     }
 
-    var total_distance = 909 * 20; // *** change this to an equation
+    var total_distance = MAX_DISTANCE / px2m;
     var accData = [];
     for (j = 0; j < Math.floor(acc.length / 2); j++) {
         accData.push({ x: acc[2 * j], y: 0 });

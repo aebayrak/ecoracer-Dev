@@ -293,43 +293,39 @@ export class Chipmunk2DWorld {
         // check for terminating conditions
         // player crossing the finish line
         if (car_pos >= MAX_DISTANCE) {
-            this.Stop();
-            this.player.SuspendVehicle();
-            if (!this.player.IsBattEmpty()) {
-                messagebox('Congratulations!', true);
-            } else {
-                messagebox('Good job but try to save battery!', false);
+            let stop_text = 'Congratulations!';
+            let finished = true;
+            if (this.player.IsBattEmpty()) {
+                stop_text ='Good job but try to save battery!';
+                finished = false;
             }
+            this.Stop(stop_text, finished);
+            this.player.SuspendVehicle();
         }
         // player runs out of time
         else if (this.simTime > MAX_GAME_TIME) {
-            this.Stop();
+            this.Stop('Time out! Please restart.');
             this.player.SuspendVehicle();
-            messagebox('Time out! Please restart.', false);
         }
         // player went backwards
         else if (car_pos < 1) {
-            this.Stop();
+            this.Stop("Can't go back! Please restart.");
             this.player.SuspendVehicle();
-            messagebox("Can't go back! Please restart.", false);
         }
         // player went underground
         else if (this.player.YPosition() < 0) {
-            this.Stop();
+            this.Stop('Oops...');
             this.player.SuspendVehicle();
-            messagebox('Oops...', false);
         }
         // TODO: not sure what this is checking for
         else if (this.player.chassis.rot.x < 0) {
-            this.Stop();
+            this.Stop('The driver is too drunk!');
             this.player.SuspendVehicle();
-            messagebox('The driver is too drunk!', false);
         }
         // battery is empty, we are slow/stopped, and too far from the finish line
         else if (this.player.IsBattEmpty() && Math.abs(this.player.chassis.vx) <= 2 && car_pos < MAX_DISTANCE) {
-            this.Stop();
+            this.Stop('The battery is messed up!');
             this.player.SuspendVehicle();
-            messagebox('The battery is messed up!', false);
         }
     };
 
@@ -430,9 +426,13 @@ export class Chipmunk2DWorld {
 
     /**
      * Disable the game world.
+     * @param {string} message message to display as the reason for terminating
+     * @param {boolean} finished if the player finished the track
      */
-    Stop = () => {
+    Stop = (message, finished = false) => {
         this.running = false;
+        this.message = message;
+        this.playerFinished = finished;
     };
 
     /**
