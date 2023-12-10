@@ -12,7 +12,7 @@ export var gear_ratio = 18; // final drive ratio
 
 var MAX_FINALDRIVE = 40.0;
 var MIN_FINALDRIVE = 10.0;
-var touch_x, touch_y;
+var touch_y, current_y, touch_ratio;
 var gear_time_start = Date.now();
 var gear_speed = 1.0;
 var gear_frame;
@@ -27,16 +27,10 @@ var mousedown = false;
  *  #finaldrivetext for text feedback and status
  */
 export function initialize_design(){
-	$("#finaldrivetext").html("<a>Final Drive Ratio: "+gear_ratio + "</a><br><a>Swipe to tune</a>");
+	$("#finaldrivetext").html( gear_ratio );
 	var width = $("#canvas_gear").width();
 	var height = $("#canvas_gear").height();
 	var radius = 50;
-	// var x = Math.sin(2 * Math.PI / 3);
-	// var y = Math.cos(2 * Math.PI / 3);
-
-	// var offset = 0,
-	// 	speed = 4,
-	// 	start = Date.now();
 	
 	var svg = d3.select("#canvas_gear").append("svg")
 		.attr("width", width)
@@ -61,34 +55,32 @@ export function initialize_design(){
 		.datum({teeth: 32, radius: -radius * 2})
 	.append("path")
 		.attr("d", gear);
-	
-	$("#finaldrive").on('touchstart',function(e){
-		touch_x = e.originalEvent.touches[0].pageX;
-		touch_y = e.originalEvent.touches[0].pageY;
-	});
-	$("#finaldrive").on('mousedown', function(e){
-		touch_x = e.pageX;
-		touch_y = e.pageY;
-		mousedown = true;
-	});
-	$("#finaldrive").on('touchmove',function(e){
-		gear_ratio = Math.max(Math.min(MAX_FINALDRIVE, (e.originalEvent.touches[0].pageY - touch_y)*0.1+gear_ratio),MIN_FINALDRIVE);
+
+	function updateGears(){
+		gear_ratio = Math.max(Math.min(MAX_FINALDRIVE, ((touch_y - current_y)*0.3)+touch_ratio), MIN_FINALDRIVE);
 		gear_ratio = Math.round(gear_ratio);
-		$("#finaldrivetext").html("<a>Final Drive Ratio: "+gear_ratio+"</a><br><a>Swipe to tune</a>");
+		$("#finaldrivetext").html(gear_ratio);
 		$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(gear_ratio-25)) + ")");
 		$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(gear_ratio-25)) + ")");
-		touch_x = e.originalEvent.touches[0].pageX;
-		touch_y = e.originalEvent.touches[0].pageY;
+	};
+
+	$("#canvas_gear").on('touchstart',function(e){
+		current_y = touch_y = e.originalEvent.touches[0].pageY;
+		touch_ratio = gear_ratio;
 	});
-	$("#finaldrive").on('mousemove', function(e){
+	$("#canvas_gear").on('mousedown', function(e){
+		current_y = touch_y = e.pageY;
+		touch_ratio = gear_ratio;
+		mousedown = true;
+	});
+	$("#canvas_gear").on('touchmove',function(e){
+		current_y = e.originalEvent.touches[0].pageY;
+		updateGears();
+	});
+	$("#canvas_gear").on('mousemove', function(e){
 		if(mousedown){
-			gear_ratio = Math.max(Math.min(MAX_FINALDRIVE, (e.pageY - touch_y)*0.1+gear_ratio),MIN_FINALDRIVE);
-			gear_ratio = Math.round(gear_ratio);
-			$("#finaldrivetext").html("<a>Final Drive Ratio: "+gear_ratio+"</a><br><a>Swipe to tune</a>");
-			$(".sun")[0].setAttribute("transform", "translate(0," + radius * 1.5 + ")"+"scale(" + (1.0-0.01*(gear_ratio-25)) + ")");
-			$(".planet")[0].setAttribute("transform", "translate(0,-" + radius * 1.5 + ")"+"scale(" + (1.0+0.01*(gear_ratio-25)) + ")");
-			touch_x = e.pageX;
-			touch_y = e.pageY;			
+			current_y = e.pageY;
+			updateGears();
 		}
 	});
 	$("body").on('mouseup', function(){

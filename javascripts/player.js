@@ -397,9 +397,9 @@ export class Player {
      */
     UpdateUI() {
         if (this.firendlyName === Player.NAMES.HUMAN) {
-            document.getElementById('pbar').value = ((this.localData.car_posOld - 9) / (MAX_DISTANCE - 9)) * 100;
+            $('#pbar').val(((this.localData.car_posOld - 9) / (MAX_DISTANCE - 9)) * 100);
             $('#speedval').html(this.localData.vehSpeed + ' MPH');
-            $('#battval').html(this.localData.battStatus + '%');
+            $('#battval').html(this.localData.battStatus.toFixed(1) + '%');
 
             let displayVaule = '--';
             if (this.localData.motor2eff != 0) {

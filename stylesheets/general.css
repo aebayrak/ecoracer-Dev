@@ -40,45 +40,46 @@
 /* UI types buttons */
 
 .round-button {
-    display:block;
-    width:40px;
-    height:40px;
+    /* display:block; */
+	background: white;
+    color: black;
+    /* width:40px; */
+    /* height:40px; */
     border: 5px solid #222222;
     border-radius: 50%;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: scroll;
-    background-size: 70%;
-    /* background-clip: content-box; */
-    text-align:center;
-    /* text-decoration:none; */
-    font-size:80px;
-    font-weight:bold;
-    transition: all 0.1s;
-    /* line-height:120px; */
-   	/* position:absolute; */
-	/* margin: 20px; */
-    cursor: pointer;
-}
+    /* background-repeat: no-repeat; */
+    /* background-position: center; */
+    /* background-attachment: scroll; */
+    /* background-size: 70%; */
 
-.button {
-/*	position: absolute;*/
-	height: 60px;
-	width: 20%;
-	border: 5px solid #222222;
-	text-align:center;
-    text-decoration:none;
-    background: #e9e9e9;
-    color: #222222;
-    font-size: 40px;
-    line-height: 60px;
+	/* display: flex; */
+	/* align-items: center; */
+	/* align-content: center; */
+	/* justify-content: center; */
+
+	/* transition: all 0.1s; */
     cursor: pointer;
     z-index: 1;
 }
 
-.button:active, .button:hover {
-    background: #222222;
-    color: #e9e9e9;
+.button {
+	display: block;
+	background: white;
+    color: black;
+	border: 5px solid #222222;
+
+	display: flex;
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+
+	cursor: pointer;
+    z-index: 1;
+}
+
+.button:active, .button:hover, .round-button:active, .round-button:hover {
+    /* background: lightgray; */
+	background-color: lightgray;
 }
 
 /* html elements */
@@ -87,18 +88,32 @@ body {
 	/* margin: 40px; */
 	/* background-color: black; */
 	/* color: lightgray; */
+	font-size: 3.5vw;
 	text-align: center;
 	vertical-align: middle;
+	overflow: hidden;
 }
 
 h1 {
-   	font-size: 30px;
+	font-size: 5vw;
    	text-align: center;
 }
 
 h2 {
-   	font-size: 25px;
+	font-size: 4vw;
    	text-align: center;
+}
+
+div {
+	font-size: 2vw;
+	text-align: center;
+	vertical-align: middle;
+}
+
+p {
+	font-size: 2vw;
+	text-align: center;
+	vertical-align: middle;
 }
 
 /* display/hide based on screen orientation */

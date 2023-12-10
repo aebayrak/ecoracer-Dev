@@ -4,6 +4,7 @@ import { world, Chipmunk2DWorld } from './game-physics.js';
 import { GhostControl } from './ghost-control.js';
 import { Players, PlayerCredentials, Player } from './player.js';
 import { Battery } from './drivetrain-model.js';
+import { initialize_design } from './design.js';
 
 export const EcoRacerOptions = {
     SERVER: {
@@ -21,10 +22,10 @@ export const EcoRacerOptions = {
     },
     UI: {
         /**
+         * enable the gear ratio design screen
          * @type {boolean}
-         * TODO: not hooked
          */
-        ALLOW_GEAR_DESIGN: false,
+        ALLOW_GEAR_DESIGN: true,
     },
     AI: {
         /**
@@ -124,6 +125,7 @@ function messagebox(msg, win = true) {
 }
 
 /****************************************** GAME **********************************************************/
+let animationHandle = 0;
 let simulationTime = 0;
 let lastRenderTime = 0;
 let historyDrawn = false;
@@ -179,7 +181,7 @@ function GameLoop(highResTimerMillisec) {
 
     // look for termination conditions
     if (world.running) {
-        requestAnimationFrame(GameLoop);
+        animationHandle = requestAnimationFrame(GameLoop);
     } else {
         if( world.playerFinished ){
             messagebox(world.message, true);
@@ -202,7 +204,11 @@ function RunGame() {
     world.Run();
     simulationTime = undefined;
     ChangePage('home-page');
-    requestAnimationFrame(GameLoop);
+    animationHandle = requestAnimationFrame(GameLoop);
+}
+
+function FreezeGame() {
+    cancelAnimationFrame(animationHandle);
 }
 
 /**
@@ -382,17 +388,27 @@ $(function () {
     });
 
     $('#designbutton').on('tap click', function () {
-        $('#design-page').show();
-        initialize_design();
+        if( EcoRacerOptions.UI.ALLOW_GEAR_DESIGN){
+            // $('#design-page').show();
+            FreezeGame();
+            ChangePage('design-page');
+            initialize_design();
+        }
     });
     $('#resetbutton').on('tap click', function () {
         restart();
     });
     $('#designed').on('tap click', function () {
-        $('#design-page').hide();
+        // $('#design-page').hide();
         $('#canvas_gear').empty();
         restart();
     });
+
+    if(EcoRacerOptions.UI.ALLOW_GEAR_DESIGN){
+        $('#designbutton').show();
+    } else {
+        $('#designbutton').hide();
+    }
 
     if (EcoRacerOptions.SERVER.USE_LOGIN) {
         ChangePage('reg-page');
