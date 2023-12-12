@@ -2,9 +2,13 @@ import { EcoRacerOptions } from "./main.js";
 import { gear_ratio } from './design.js'
 import { maxTrqlerp, efflerp, Battery } from "./drivetrain-model.js";
 import { Chipmunk2DWorld } from "./game-physics.js";
+import { GLOBALS } from "./globals.js";
 
-const TIME_STEP = SIMULATION_STEPS_PER_SECOND;
 const FRICTION = 2.8;
+const TIME_STEP = GLOBALS.SIMULATION_STEPS_PER_SECOND;
+const t2t = GLOBALS.t2t;
+const m2m = GLOBALS.m2m;
+const px2m = GLOBALS.px2m;
 
 /**
  * Class to hold login credentials
@@ -397,7 +401,7 @@ export class Player {
      */
     UpdateUI() {
         if (this.firendlyName === Player.NAMES.HUMAN) {
-            $('#pbar').val(((this.localData.car_posOld - 9) / (MAX_DISTANCE - 9)) * 100);
+            $('#pbar').val(((this.localData.car_posOld - 9) / (GLOBALS.MAX_DISTANCE - 9)) * 100);
             $('#speedval').html(this.localData.vehSpeed + ' MPH');
             $('#battval').html(this.localData.battStatus.toFixed(1) + '%');
 

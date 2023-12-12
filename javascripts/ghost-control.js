@@ -2,6 +2,7 @@
  * This module is responsible for making the AI learned data available for use.
  */
 
+import { GLOBALS } from './globals.js';
 import { Players } from './player.js';
 
 // hardcoded solution, each point is good for 5 distance intervals on the scale of 0-910
@@ -35,7 +36,7 @@ export const GhostControl = {
      * If the action differs from the previous invocation, it is applied to the AI player.
      */
     DoAction: () => {
-        let distance = Players.AI.XPosition() * px2m;
+        let distance = Players.AI.XPosition() * GLOBALS.px2m;
 
         // TODO: use distances array to find appropriate index.
         // const ACTION_SCALE = MAX_DISTANCE / actions.length;

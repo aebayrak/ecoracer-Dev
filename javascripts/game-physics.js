@@ -4,6 +4,7 @@
  * Engine torque and battery capacity are handled in the Player module.
  */
 
+import { GLOBALS } from './globals.js';
 import { EcoRacerOptions } from './main.js';
 import { Players } from './player.js';
 
@@ -167,7 +168,7 @@ export class Chipmunk2DWorld {
         this.space.sleepTimeThreshold = 100;
 
         let xstep = 200; // this distance between consecutive elevation data points
-        this.#AddGround(data, scene_widthx, xstep);
+        this.#AddGround(GLOBALS.trackElevationData, scene_widthx, xstep);
         this.#AddFinishLine(scene_widthx - 3 * xstep);
 
         let posA = cp.v(50, 0);
@@ -200,7 +201,7 @@ export class Chipmunk2DWorld {
      * @returns {cp.Body} the body that was added
      */
     AddBar = (pos) => {
-        let mass = 1 / m2m; // 1kg
+        let mass = 1 / GLOBALS.m2m; // 1kg
         let a = cp.v(0, 10);
         let b = cp.v(0, -10);
 
@@ -221,7 +222,7 @@ export class Chipmunk2DWorld {
      */
     AddWheel = (pos) => {
         let radius = 12;
-        let mass = 20 / m2m; // 20kg
+        let mass = 20 / GLOBALS.m2m; // 20kg
         let body = this.space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
         body.setPos(cp.v.add(pos, this.boxOffset));
 
@@ -240,9 +241,9 @@ export class Chipmunk2DWorld {
      * @returns {cp.Body} the body that was added
      */
     AddChassis = (pos, style = 'black') => {
-        let mass = 1500 / m2m; // 1500 kg
-        let width = 4 / px2m; // --> 3.5m length
-        let height = 1.8 / px2m; // --> 1.0m height
+        let mass = 1500 / GLOBALS.m2m; // 1500 kg
+        let width = 4 / GLOBALS.px2m; // --> 3.5m length
+        let height = 1.8 / GLOBALS.px2m; // --> 1.0m height
 
         let body = this.space.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
         body.setPos(cp.v.add(pos, this.boxOffset));
@@ -288,11 +289,11 @@ export class Chipmunk2DWorld {
         if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
             this.ai.UpdateVariables();
         }
-        let car_pos = Math.round(this.player.XPosition() * px2m);
+        let car_pos = Math.round(this.player.XPosition() * GLOBALS.px2m);
 
         // check for terminating conditions
         // player crossing the finish line
-        if (car_pos >= MAX_DISTANCE) {
+        if (car_pos >= GLOBALS.MAX_DISTANCE) {
             let stop_text = 'Congratulations!';
             let finished = true;
             if (this.player.IsBattEmpty()) {
@@ -323,7 +324,7 @@ export class Chipmunk2DWorld {
             this.player.SuspendVehicle();
         }
         // battery is empty, we are slow/stopped, and too far from the finish line
-        else if (this.player.IsBattEmpty() && Math.abs(this.player.chassis.vx) <= 2 && car_pos < MAX_DISTANCE) {
+        else if (this.player.IsBattEmpty() && Math.abs(this.player.chassis.vx) <= 2 && car_pos < GLOBALS.MAX_DISTANCE) {
             this.Stop('The battery is messed up!');
             this.player.SuspendVehicle();
         }

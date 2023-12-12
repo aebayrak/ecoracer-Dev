@@ -1,3 +1,4 @@
+import { GLOBALS } from './globals.js';
 import { Players, Player } from './player.js';
 import { gear_ratio } from './design.js';
 import { Battery } from './drivetrain-model.js';
@@ -218,7 +219,7 @@ export function plot(d, i) {
         brake = brake_copy;
     }
 
-    var total_distance = MAX_DISTANCE / px2m;
+    var total_distance = GLOBALS.MAX_DISTANCE / GLOBALS.px2m;
     var accData = [];
     for (j = 0; j < Math.floor(acc.length / 2); j++) {
         accData.push({ x: acc[2 * j], y: 0 });

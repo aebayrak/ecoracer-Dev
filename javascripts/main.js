@@ -5,6 +5,7 @@ import { GhostControl } from './ghost-control.js';
 import { Players, PlayerCredentials, Player } from './player.js';
 import { Battery } from './drivetrain-model.js';
 import { initialize_design } from './design.js';
+import { GLOBALS } from './globals.js';
 
 export const EcoRacerOptions = {
     SERVER: {
@@ -129,7 +130,7 @@ let animationHandle = 0;
 let simulationTime = 0;
 let lastRenderTime = 0;
 let historyDrawn = false;
-const SIM_DT_MILLISEC = 1000 / SIMULATION_STEPS_PER_SECOND; //ms
+const SIM_DT_MILLISEC = 1000 / GLOBALS.SIMULATION_STEPS_PER_SECOND; //ms
 /**
  * This is the main game loop.
  * This is called by the Browser at the device's refresh rate FPS, if sufficient CPU time allows.
@@ -169,7 +170,7 @@ function GameLoop(highResTimerMillisec) {
     if (lastRenderTime === undefined || lastRenderTime === 0) {
         lastRenderTime = highResTimerMillisec;
     } else {
-        render_frame = ((highResTimerMillisec - lastRenderTime) >= (1000 / MAX_RENDER_FPS));
+        render_frame = ((highResTimerMillisec - lastRenderTime) >= (1000 / GLOBALS.MAX_RENDER_FPS));
     }
 
     // handle rendering
@@ -197,7 +198,7 @@ function GameLoop(highResTimerMillisec) {
  * Entry point to reset/setup the game objects and begin the main game loop
  */
 function RunGame() {
-    MiniMap.Init('#minimap', data);
+    MiniMap.Init('#minimap', GLOBALS.trackElevationData);
     GhostControl.Reset();
     new Chipmunk2DWorld('game_world');
     world.Reset();
