@@ -10,3 +10,9 @@ The game is a 2D side-scroller electric-vehicle racing game where the objective 
 * The game ends when
   * The time constraint expires, there is a time limit on completing the track.
   * The vehicle crosses the finish line, the player is awarded points for time and remaining battery charge.
+
+# Documentation
+
+High level documentation is available on the GitHub Wiki.
+
+Detailed documentation is left to JSDoc style comments within the codebase.
