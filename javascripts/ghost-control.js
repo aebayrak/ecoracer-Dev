@@ -4,8 +4,9 @@
 
 import { GLOBALS } from './globals.js';
 import { Players } from './player.js';
+import { GetWrapper } from './server.js';
 
-// hardcoded solution, each point is good for 5 distance intervals on the scale of 0-910
+// hardcoded solution, each point is good for 5 distance intervals on the scale of 9-910
 const BEST_EPISODE_NUMBER = 81;
 const BEST_ACTION = [
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
@@ -14,8 +15,16 @@ const BEST_ACTION = [
     0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -1, 0, 0, 0, -1, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, 0, -1, 0, -1, -1, -1,
     -1, -1, -1, 0, -1, -1
 ];
+const BEST_DISTANCES = [];
+let distance = 9;
+BEST_ACTION.forEach(element => {
+    BEST_DISTANCES.push(distance);
+    distance += 5;
+});
 
-let actions = BEST_ACTION;
+// variables used for control decisions
+let distances = [];
+let actions = [];
 let lastAction = undefined;
 
 const ACCELERATE = 1;
@@ -38,14 +47,14 @@ export const GhostControl = {
     DoAction: () => {
         let distance = Players.AI.XPosition() * GLOBALS.px2m;
 
-        // TODO: use distances array to find appropriate index.
-        // const ACTION_SCALE = MAX_DISTANCE / actions.length;
-        const ACTION_SCALE = 5;
-        if (distance < 0 || distance / ACTION_SCALE >= actions.length) {
-            throw new Error('Bad distance!');
+        let index=0;
+        while( index < distances.length && distances[index] < distance ){
+            index++;
         }
+        // adjust index
+        if(index > 0) index--;
 
-        let action = actions[Math.floor(distance / ACTION_SCALE)];
+        let action = actions[index];
 
         if (lastAction !== action) {
             lastAction = action;
@@ -73,9 +82,17 @@ export const GhostControl = {
      * @param {number} episodeNumber the episode number to use.
      */
     LoadFromServer: (episodeNumber = BEST_EPISODE_NUMBER) => {
-        console.log('loading episode ', episodeNumber);
-        // TODO: import JSON formatted data via GET request from the server.
         actions = BEST_ACTION;
-        this.Reset();
+        distances = BEST_DISTANCES;
+        GhostControl.Reset();
+        
+        // import JSON formatted data via GET request from the server.
+        GetWrapper( '/ghost-control-data',
+                    {}, /* possible optimization, have server just return data for 1 episode */
+                    (data) => {
+                        console.log('got ', data.length, ' episodes from server, storing episode ', episodeNumber);
+                        actions = data[episodeNumber].actions;
+                        distances = data[episodeNumber].position
+                    });
     }
 };

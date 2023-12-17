@@ -45,7 +45,7 @@ function defaultOnFailure (response){
  * @param {function(jqXHR)} onFailure a function to call on POST failure, the argument is the jQuery
  *                                    object containing data related to the request and its result
  */
-function PostWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
+export function PostWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
     if(EcoRacerOptions.SERVER.USE_CANNED_RESPONSES){
         // change URL to have the server return a constant JSON file
         $.get('/javascripts/server'+url+'.json', data, (result) => {
@@ -68,7 +68,7 @@ function PostWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
  * @param {function(jqXHR)} onFailure a function to call on GET failure, the argument is the jQuery
  *                                    object containing data related to the request and its result
  */
-function GetWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
+export function GetWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
     if(EcoRacerOptions.SERVER.USE_CANNED_RESPONSES){
         // change URL to have the server return a constant JSON file
         $.get('javascripts/server'+url+'.json', data, (result) => {
@@ -130,7 +130,8 @@ export function UserLogin(username, password, callback) {
                 score = Battery.Consumption2Percentage(data.bestScore, 1)
             }
             $('#myscore').html('Best Score: ' + score + '%');
-            callback();
+            if(callback)
+                callback();
         }
     });
 }

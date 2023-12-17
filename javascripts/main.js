@@ -38,8 +38,8 @@ export const EcoRacerOptions = {
         FEEDBACK_GHOST_CAR: true,
         /** @type {boolean} enable to show chevrons as hint to speed up or slow down */
         FEEDBACK_CHEVRON: true,
-        /** @type {null | number} Use null for best answer control, or episode number for less than optimal control */
-        AI_CONTROL_EPISODE: null,
+        /** @type {undefined | number} Use undefiend for best answer control, or episode number for less than optimal control */
+        AI_CONTROL_EPISODE: undefined,
     },
 };
 
@@ -161,7 +161,9 @@ function GameLoop(highResTimerMillisec) {
  */
 function RunGame() {
     MiniMap.Init('#minimap', GLOBALS.trackElevationData);
-    GhostControl.Reset();
+    if(EcoRacerOptions.AI.ALLOW_AI_PLAYER){
+        GhostControl.LoadFromServer(EcoRacerOptions.AI.AI_CONTROL_EPISODE);
+    }
     new Chipmunk2DWorld('game_world');
     world.Reset();
     world.Run();
@@ -193,7 +195,7 @@ function restart() {
     // TODO: this existing code (user login) is really heavy handed for updating the 
     // UI with the current best score. The UI should be updated for current best score 
     // when the game ends, even before submitting results to server.
-    if(EcoRacerOptions.SERVER.USE_LOGIN && EcoRacerOptions.SERVER.POST_RESULTS){
+    if(EcoRacerOptions.SERVER.USE_LOGIN){
         let creds = Players.HUMAN.serverData.credentials;
         server.UserLogin(creds.username, creds.password);
     }
