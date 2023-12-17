@@ -1,8 +1,8 @@
-import { EcoRacerOptions } from "./main.js";
-import { gear_ratio } from './design.js'
-import { maxTrqlerp, efflerp, Battery } from "./drivetrain-model.js";
-import { Chipmunk2DWorld } from "./game-physics.js";
-import { GLOBALS } from "./globals.js";
+import { EcoRacerOptions } from './main.js';
+import { gear_ratio } from './design.js';
+import { maxTrqlerp, efflerp, Battery } from './drivetrain-model.js';
+import { Chipmunk2DWorld } from './game-physics.js';
+import { GLOBALS } from './globals.js';
 
 const FRICTION = 2.8;
 const TIME_STEP = GLOBALS.SIMULATION_STEPS_PER_SECOND;
@@ -31,7 +31,7 @@ export class ServerData {
 }
 
 /**
- * Class to hold variables maintained within the browser. 
+ * Class to hold variables maintained within the browser.
  */
 class ClientData {
     constructor() {
@@ -63,15 +63,15 @@ class ClientData {
 /**
  * This class represents a player in the EcoRacer game. A player represents both
  * the user and a vehicle instantiation in the chipmunk engine.
- * 
+ *
  * Through the Player object, GUI / AI input can drive the vehicle using the functions
  * @function PressAccelerator(), @function ReleaseAccelerator(), @function PressBrake(), and @function ReleaseBrake()
- * 
+ *
  * To synchronize with the physics engine simulation, player objects should update their internal variables in lockstep.
  * @function UpdateVariables() should be called for each physics engine time step, with a matching time step size.
  * The Player object handles converting player control actions (accelerate and decelerate) into wattage, which is then
  * used to update the vehicle's battery. It also applies the expected torque forces to the motor constraints in the engine.
- * 
+ *
  * This object can create and add shapes to the physics engine representing its vehicle, and update UI elements in the DOM
  * with relevant data points like battery, speed, and the overall progress bar.
  */
@@ -191,11 +191,11 @@ export class Player {
 
     /**
      * Log the current X position into the action array passed in.
-     * 
-     * The way existing code logs, for example, pressing the accelerator at position 9, releasing at position 15, then press 
+     *
+     * The way existing code logs, for example, pressing the accelerator at position 9, releasing at position 15, then press
      * again at 21, and release at 50, is to create the array [9, 15, 21, 50].
      * effectively each pair of numbers represent a duration for which a specific event happens.
-     * @param {Array<number>} keyArray 
+     * @param {Array<number>} keyArray
      */
     RecordKey(keyArray) {
         let xp = this.XPosition();
@@ -221,7 +221,7 @@ export class Player {
         this.wheel2 = scene.AddWheel(posB);
 
         // mark the body as hidden or not, to help simplify the rendering later.
-        let hidden = ((this === Players.AI) && (false === EcoRacerOptions.AI.FEEDBACK_GHOST_CAR))
+        let hidden = this === Players.AI && false === EcoRacerOptions.AI.FEEDBACK_GHOST_CAR;
         this.chassis.render = !hidden;
         this.motorbar1.render = !hidden;
         this.motorbar2.render = !hidden;
@@ -297,7 +297,8 @@ export class Player {
 
         // TODO: describe what this friction calculation is doing
         let fricImpl =
-            (((-1 * FRICTION * (chassis.m + wheel1.m + wheel2.m + motorbar1.m + motorbar2.m) * wheel1.shapeList[0].r) / TIME_STEP) * wheel1.w) /
+            (((-1 * FRICTION * (chassis.m + wheel1.m + wheel2.m + motorbar1.m + motorbar2.m) * wheel1.shapeList[0].r) / TIME_STEP) *
+                wheel1.w) /
             (Math.abs(wheel1.w) + 0.0001);
         wheel1.w += fricImpl * wheel1.i_inv;
         wheel2.w += fricImpl * wheel2.i_inv;
@@ -355,7 +356,7 @@ export class Player {
             this.localData.save_eff.push(Math.round(this.localData.motor2eff * 100));
             this.localData.save_batt.push(this.localData.battStatus);
         }
-        
+
         // push all the calculated values to the corresponding UI elements.
         this.UpdateUI();
     }
@@ -372,7 +373,8 @@ export class Player {
         let motor2 = this.motor2;
 
         //motor1speed = -1*wheel1.w/t2t*gear_ratio/2/Math.PI*60; //RPM;
-        let motor1speed = (((Math.sqrt(Math.pow(chassis.vx, 2) + Math.pow(chassis.vy, 2)) / wheel1.shapeList[0].r / t2t) * gear_ratio) / Math.PI) * 30;
+        let motor1speed =
+            (((Math.sqrt(Math.pow(chassis.vx, 2) + Math.pow(chassis.vy, 2)) / wheel1.shapeList[0].r / t2t) * gear_ratio) / Math.PI) * 30;
         //motor2speed = -1*wheel2.w/t2t*gear_ratio/2/Math.PI*60; //RPM;
         let motor2speed = motor1speed;
         let maxTrq1 = (maxTrqlerp(motor1speed) / m2m / px2m / px2m) * t2t * t2t; //Nm

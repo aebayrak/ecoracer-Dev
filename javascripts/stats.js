@@ -1,8 +1,8 @@
-import { GLOBALS } from "./globals.js";
+import { GLOBALS } from './globals.js';
 const t2t = GLOBALS.t2t;
 const m2m = GLOBALS.m2m;
 const px2m = GLOBALS.px2m;
- 
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */

@@ -25,14 +25,16 @@ let frall = [];
 
 /**
  * This is a default error handler for GET/POST requests where the server responds with a failure code.
- * @param {jqXHR} response 
+ * @param {jqXHR} response
  */
-function defaultOnFailure (response){
+function defaultOnFailure(response) {
     // log it to the console.
     console.log(response);
     // assume current visible page has 'message' element and display the error for a brief time.
-    $('#message').html("Server error: " + response.statusText);
-    setTimeout(function () { $('#message').html(''); }, 1500);
+    $('#message').html('Server error: ' + response.statusText);
+    setTimeout(function () {
+        $('#message').html('');
+    }, 1500);
 }
 
 /**
@@ -40,18 +42,17 @@ function defaultOnFailure (response){
  * method of returning canned responses when an actual server is not available.
  * @param {string} url the URL to POST to
  * @param {object} data the contents of the POST request (any object really)
- * @param {function(object)} onSuccess a function to call on POST success, the argument is the content 
+ * @param {function(object)} onSuccess a function to call on POST success, the argument is the content
  *                                     of the response
  * @param {function(jqXHR)} onFailure a function to call on POST failure, the argument is the jQuery
  *                                    object containing data related to the request and its result
  */
-export function PostWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
-    if(EcoRacerOptions.SERVER.USE_CANNED_RESPONSES){
+export function PostWrapper(url, data, onSuccess, onFailure = defaultOnFailure) {
+    if (EcoRacerOptions.SERVER.USE_CANNED_RESPONSES) {
         // change URL to have the server return a constant JSON file
-        $.get('/javascripts/server'+url+'.json', data, (result) => {
+        $.get('/javascripts/server' + url + '.json', data, (result) => {
             console.log('using canned json reply to POST ', url, ': ', result);
-            if(onSuccess)
-                onSuccess(result);
+            if (onSuccess) onSuccess(result);
         }).fail(onFailure);
     } else {
         $.post(url, data, onSuccess).fail(onFailure);
@@ -63,18 +64,17 @@ export function PostWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
  * method of returning canned responses when an actual server is not available.
  * @param {string} url the URL to GET from
  * @param {object} data the contents of the GET request, converted to URI variables
- * @param {function(object)} onSuccess a function to call on GET success, the argument is the content 
+ * @param {function(object)} onSuccess a function to call on GET success, the argument is the content
  *                                     of the response
  * @param {function(jqXHR)} onFailure a function to call on GET failure, the argument is the jQuery
  *                                    object containing data related to the request and its result
  */
-export function GetWrapper(url, data, onSuccess, onFailure = defaultOnFailure){
-    if(EcoRacerOptions.SERVER.USE_CANNED_RESPONSES){
+export function GetWrapper(url, data, onSuccess, onFailure = defaultOnFailure) {
+    if (EcoRacerOptions.SERVER.USE_CANNED_RESPONSES) {
         // change URL to have the server return a constant JSON file
-        $.get('javascripts/server'+url+'.json', data, (result) => {
+        $.get('javascripts/server' + url + '.json', data, (result) => {
             console.log('using canned json reply to GET ', url, ': ', result);
-            if(onSuccess)
-                onSuccess(result);
+            if (onSuccess) onSuccess(result);
         }).fail(onFailure);
     } else {
         $.get(url, data, onSuccess).fail(onFailure);
@@ -98,7 +98,7 @@ export function Signup(user, pass, callback) {
             // if signup succeeded, do an immediate login
             UserLogin(user, pass, callback);
         }
-    )
+    );
 }
 
 /**
@@ -117,7 +117,9 @@ export function UserLogin(username, password, callback) {
     PostWrapper('/getUser', { username: user, password: pass }, function (response) {
         if (response === '') {
             $('#message').html("User doesn't exist or password wrong.");
-            setTimeout(function () { $('#message').html(''); }, 1500);
+            setTimeout(function () {
+                $('#message').html('');
+            }, 1500);
         } else {
             let data = Players.HUMAN.serverData;
             data.credentials = new PlayerCredentials(user, pass);
@@ -127,11 +129,10 @@ export function UserLogin(username, password, callback) {
 
             let score = '--';
             if (data.bestScore > 0) {
-                score = Battery.Consumption2Percentage(data.bestScore, 1)
+                score = Battery.Consumption2Percentage(data.bestScore, 1);
             }
             $('#myscore').html('Best Score: ' + score + '%');
-            if(callback)
-                callback();
+            if (callback) callback();
         }
     });
 }
@@ -153,11 +154,7 @@ export function submitResult(successful, player) {
         PostWrapper('/getscore', { score: c }, function (data) {
             ranking_percentage = Math.round((parseInt(data[0].count) / total_num_user) * 100) || 0;
             $('#textmessage').html(
-                'You saved ' +
-                    Battery.Consumption2Percentage(c) +
-                    " % of energy, that's better than " +
-                    ranking_percentage +
-                    '% of plays!'
+                'You saved ' + Battery.Consumption2Percentage(c) + " % of energy, that's better than " + ranking_percentage + '% of plays!'
             );
             // show top 5 scores
             $('#scorebox').empty();
@@ -228,13 +225,7 @@ export function submitResult(successful, player) {
         if (typeof scores !== 'undefined') {
             for (var i = 0; i < Math.min(5, scores.length); i++) {
                 $('#scorebox').append(
-                    "<div class='score'>" +
-                        (i+1) +
-                        '. ' +
-                        Battery.Consumption2Percentage(scores[i], 1) +
-                        '%, FR=' +
-                        frall[i] +
-                        '<div>'
+                    "<div class='score'>" + (i + 1) + '. ' + Battery.Consumption2Percentage(scores[i], 1) + '%, FR=' + frall[i] + '<div>'
                 );
             }
         }
@@ -430,13 +421,7 @@ function plot(d, i) {
         .attr('y', padding / 2)
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
-        .text(
-            Battery.Consumption2Percentage(d.score, 1) +
-            ' from user: ' +
-            d.userid +
-            ' with finaldrive: ' +
-            d.finaldrive
-        );
+        .text(Battery.Consumption2Percentage(d.score, 1) + ' from user: ' + d.userid + ' with finaldrive: ' + d.finaldrive);
 }
 
 /**

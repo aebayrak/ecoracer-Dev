@@ -32,12 +32,11 @@ const MAX_GAME_TIME = 36; // 30s
 // var lastChargingX = 0;
 //////////////////////////
 
-
 /**
  * The next few functions are defining rendering calls on the Shape
  * 'objects' within Chimpunk library. This library predates JavaScript classes,
  * so we use the term objects and inheritance loosely.
- * These rending calls could be defined anywhere, this is simply following 
+ * These rending calls could be defined anywhere, this is simply following
  * the approach provided in the demo code that the chipmunk library comes with.
  */
 /**
@@ -132,15 +131,14 @@ cp.CircleShape.prototype.draw = function (ctx, scale, point2canvas) {
     ctx.stroke();
 };
 
-
 /**
  * Wrapper class around a Chimpunk.js (ported from Chipmunk Game Dynamics in C) physics simulation engine.
  * At this time, chimpunk.js corresponds to version 6.1.1, and uses the same API as the C language version.
  * The C language API is documented here {@link https://files.slembcke.net/chipmunk/release/Chipmunk-6.x/Chipmunk-6.1.1-Docs/}
  * The minor adaptation of C API to JS is described here {@link https://github.com/josephg/Chipmunk-js}
- * 
+ *
  * This class was adapted from the /demo/demo.js file in the Chipmunk-js project on github.
- * 
+ *
  * This provides:
  *    - convenience functions for adding high level objects to the engine
  *    - logic to render all the shapes added to the engine
@@ -183,7 +181,6 @@ export class Chipmunk2DWorld {
         this.player.AttachToChipmunk2DWorld(this, posA, posB);
 
         world = this;
-
     }
 
     /**
@@ -297,7 +294,7 @@ export class Chipmunk2DWorld {
             let stop_text = 'Congratulations!';
             let finished = true;
             if (this.player.IsBattEmpty()) {
-                stop_text ='Good job but try to save battery!';
+                stop_text = 'Good job but try to save battery!';
                 finished = false;
             }
             this.Stop(stop_text, finished);
@@ -367,7 +364,7 @@ export class Chipmunk2DWorld {
 
         // Draw non-static bodies
         this.space.eachBody((body) => {
-            if ((body.render === undefined) || (body.render === true)) {
+            if (body.render === undefined || body.render === true) {
                 // Draw shapes
                 body.eachShape((shape) => {
                     ctx.save();
@@ -390,23 +387,23 @@ export class Chipmunk2DWorld {
                 let player_x_pos = this.player.XPosition();
                 const MIN_POSITION_DIFF = scene_widthx * 0.03; // 3% of the track
 
-                if ((ai_x_pos - player_x_pos) > MIN_POSITION_DIFF) {
+                if (ai_x_pos - player_x_pos > MIN_POSITION_DIFF) {
                     // we are too far behind!!!
                     // get position of vehicle body
                     let where = this.Point2Canvas(this.player.chassis.p);
                     where.x -= DISPLACEMENT;
                     // pick a spot above the vehicle
-                    ctx.fillText("Hurry UP!!!", where.x - 80, where.y - 40);
+                    ctx.fillText('Hurry UP!!!', where.x - 80, where.y - 40);
                     // pick a spot in front of the vehicle (top of chevron lines)
                     where.x += 50;
                     where.y -= 20;
                     this.#DrawChevrons(where, 10);
-                } else if ((player_x_pos - ai_x_pos) > MIN_POSITION_DIFF) {
+                } else if (player_x_pos - ai_x_pos > MIN_POSITION_DIFF) {
                     // we are too far ahead!!!
                     let where = this.Point2Canvas(this.player.chassis.p);
                     where.x -= DISPLACEMENT;
                     // pick a spot above the vehicle
-                    ctx.fillText("Slow DOWN!!!", where.x - 80, where.y - 40);
+                    ctx.fillText('Slow DOWN!!!', where.x - 80, where.y - 40);
                     // pick a spot behind the vehicle (top of chevron lines)
                     where.x -= 50;
                     where.y -= 20;
@@ -525,7 +522,7 @@ export class Chipmunk2DWorld {
         ctx.lineWidth = 5;
         // the chevron animation uses a sine function for transparency (alpha)
         // since alpha is in range [0,1], and sin() is [-1,1], we scale and shift the sin() curve.
-        let a = 0.5 + (0.5 * Math.sin(2 * Math.PI * (this.alpha_frame / frames_per_alpha)));
+        let a = 0.5 + 0.5 * Math.sin(2 * Math.PI * (this.alpha_frame / frames_per_alpha));
         ctx.strokeStyle = 'rgba(255,0,0,' + a + ')';
         this.alpha_frame = ++this.alpha_frame % frames_per_alpha;
 
@@ -538,5 +535,5 @@ export class Chipmunk2DWorld {
         }
 
         ctx.stroke();
-    }
+    };
 }

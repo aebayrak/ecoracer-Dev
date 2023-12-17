@@ -19,14 +19,14 @@ export const EcoRacerOptions = {
          * true -> server requests are converted to hardcoded responses
          * false -> GET/POST requests are sent to the hosting server
          */
-        USE_CANNED_RESPONSES: true,
+        USE_CANNED_RESPONSES: true
     },
     UI: {
         /**
          * enable the gear ratio design screen
          * @type {boolean}
          */
-        ALLOW_GEAR_DESIGN: true,
+        ALLOW_GEAR_DESIGN: true
     },
     AI: {
         /**
@@ -39,8 +39,8 @@ export const EcoRacerOptions = {
         /** @type {boolean} enable to show chevrons as hint to speed up or slow down */
         FEEDBACK_CHEVRON: true,
         /** @type {undefined | number} Use undefiend for best answer control, or episode number for less than optimal control */
-        AI_CONTROL_EPISODE: undefined,
-    },
+        AI_CONTROL_EPISODE: undefined
+    }
 };
 
 /**
@@ -64,27 +64,26 @@ function ChangePage(pageID) {
 
 /**
  * Function to render an end of game popup message box
- * @param {string} msg 
- * @param {boolean} win 
+ * @param {string} msg
+ * @param {boolean} win
  */
 function messagebox(msg, win = true) {
     ChangePage('popup-page');
-	$("#messagebox").show();
-	$("#textmessage").html(msg);
-	$("#acc").removeClass("activated");
-	$("#brake").removeClass("activated");
-	$("#acc").removeClass("enabled");
-	$("#brake").removeClass("enabled");
-    $("#scorebox").show();
-    $("#review").show();
-	if (win) {
-		$("#ok").show();
-		$("#restart").hide();
-	}
-	else {
-		$("#ok").hide();
-		$("#restart").show();
-	}
+    $('#messagebox').show();
+    $('#textmessage').html(msg);
+    $('#acc').removeClass('activated');
+    $('#brake').removeClass('activated');
+    $('#acc').removeClass('enabled');
+    $('#brake').removeClass('enabled');
+    $('#scorebox').show();
+    $('#review').show();
+    if (win) {
+        $('#ok').show();
+        $('#restart').hide();
+    } else {
+        $('#ok').hide();
+        $('#restart').show();
+    }
 }
 
 /****************************************** GAME **********************************************************/
@@ -99,7 +98,7 @@ const SIM_DT_MILLISEC = 1000 / GLOBALS.SIMULATION_STEPS_PER_SECOND; //ms
  * It leverages some of the advice from {@link https://gafferongames.com/post/fix_your_timestep/} regarding
  * the usage of a constant time step in the engine, while allowing for higher or lower FPS, to allow for more
  * consistent player experience regardless of their computers' CPU/GPU computation abilities.
- * 
+ *
  * The general flow of the game is to:
  *  - take in user/ai actions, applying them to the players
  *    - note: user actions are handled by keyboard/mouse/touch event handlers, not in this loop.
@@ -107,11 +106,11 @@ const SIM_DT_MILLISEC = 1000 / GLOBALS.SIMULATION_STEPS_PER_SECOND; //ms
  *  - determine the need to render (skipping above a max FPS)
  *  - perform rendering
  *  - request the next animation frame
- * 
+ *
  * @param {number} highResTimerMillisec - fractional millisecond time value from the browser.
-*/
+ */
 function GameLoop(highResTimerMillisec) {
-    if( EcoRacerOptions.AI.ALLOW_AI_PLAYER ){
+    if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
         // apply AI player input
         GhostControl.DoAction();
     }
@@ -132,7 +131,7 @@ function GameLoop(highResTimerMillisec) {
     if (lastRenderTime === undefined || lastRenderTime === 0) {
         lastRenderTime = highResTimerMillisec;
     } else {
-        render_frame = ((highResTimerMillisec - lastRenderTime) >= (1000 / GLOBALS.MAX_RENDER_FPS));
+        render_frame = highResTimerMillisec - lastRenderTime >= 1000 / GLOBALS.MAX_RENDER_FPS;
     }
 
     // handle rendering
@@ -146,7 +145,7 @@ function GameLoop(highResTimerMillisec) {
     if (world.running) {
         animationHandle = requestAnimationFrame(GameLoop);
     } else {
-        if( world.playerFinished ){
+        if (world.playerFinished) {
             messagebox(world.message, true);
             server.submitResult(true, Players.HUMAN);
         } else {
@@ -161,7 +160,7 @@ function GameLoop(highResTimerMillisec) {
  */
 function RunGame() {
     MiniMap.Init('#minimap', GLOBALS.trackElevationData);
-    if(EcoRacerOptions.AI.ALLOW_AI_PLAYER){
+    if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
         GhostControl.LoadFromServer(EcoRacerOptions.AI.AI_CONTROL_EPISODE);
     }
     new Chipmunk2DWorld('game_world');
@@ -192,10 +191,10 @@ function restart() {
     $('#history').html('');
     server.getBestScore();
     historyDrawn = false;
-    // TODO: this existing code (user login) is really heavy handed for updating the 
-    // UI with the current best score. The UI should be updated for current best score 
+    // TODO: this existing code (user login) is really heavy handed for updating the
+    // UI with the current best score. The UI should be updated for current best score
     // when the game ends, even before submitting results to server.
-    if(EcoRacerOptions.SERVER.USE_LOGIN){
+    if (EcoRacerOptions.SERVER.USE_LOGIN) {
         let creds = Players.HUMAN.serverData.credentials;
         server.UserLogin(creds.username, creds.password);
     }
@@ -211,11 +210,15 @@ $(function () {
         event.preventDefault();
         let user = $('#username')[0].value;
         let pass = $('#password')[0].value;
-        if ((user != 'username') && (user != '') && (pass != 'password') && (pass != '')) {
-            server.Signup(user, pass, () => {ChangePage('intro-page');});
+        if (user != 'username' && user != '' && pass != 'password' && pass != '') {
+            server.Signup(user, pass, () => {
+                ChangePage('intro-page');
+            });
         } else {
             $('#message').html('Username/password not allowed...');
-            setTimeout(function () { $('#message').html(''); }, 1500);
+            setTimeout(function () {
+                $('#message').html('');
+            }, 1500);
         }
     });
     $('#login').on('tap click', function (event) {
@@ -223,10 +226,14 @@ $(function () {
         let user = $('#username')[0].value;
         let pass = $('#password')[0].value;
         if (user != 'username' && user != '') {
-            server.UserLogin(user, pass, () => {ChangePage('intro-page');});
+            server.UserLogin(user, pass, () => {
+                ChangePage('intro-page');
+            });
         } else {
             $('#message').html('Username cannot be empty...');
-            setTimeout(function () { $('#message').html(''); }, 1500);
+            setTimeout(function () {
+                $('#message').html('');
+            }, 1500);
         }
     });
 
@@ -339,7 +346,7 @@ $(function () {
     });
 
     $('#designbutton').on('tap click', function () {
-        if( EcoRacerOptions.UI.ALLOW_GEAR_DESIGN){
+        if (EcoRacerOptions.UI.ALLOW_GEAR_DESIGN) {
             FreezeGame();
             ChangePage('design-page');
             initialize_design();
@@ -353,7 +360,7 @@ $(function () {
         restart();
     });
 
-    if(EcoRacerOptions.UI.ALLOW_GEAR_DESIGN){
+    if (EcoRacerOptions.UI.ALLOW_GEAR_DESIGN) {
         $('#designbutton').show();
     } else {
         $('#designbutton').hide();

@@ -58,7 +58,7 @@ export const Draw = function () {
         ctx.lineTo(x_pos, MAX_Y);
         ctx.stroke();
 
-        if(EcoRacerOptions.AI.ALLOW_AI_PLAYER){
+        if (EcoRacerOptions.AI.ALLOW_AI_PLAYER) {
             // show the AI position
             ctx.beginPath();
             position = world.ai.XPosition();

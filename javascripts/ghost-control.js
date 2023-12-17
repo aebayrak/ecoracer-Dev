@@ -17,7 +17,7 @@ const BEST_ACTION = [
 ];
 const BEST_DISTANCES = [];
 let distance = 9;
-BEST_ACTION.forEach(element => {
+BEST_ACTION.forEach((element) => {
     BEST_DISTANCES.push(distance);
     distance += 5;
 });
@@ -47,12 +47,12 @@ export const GhostControl = {
     DoAction: () => {
         let distance = Players.AI.XPosition() * GLOBALS.px2m;
 
-        let index=0;
-        while( index < distances.length && distances[index] < distance ){
+        let index = 0;
+        while (index < distances.length && distances[index] < distance) {
             index++;
         }
         // adjust index
-        if(index > 0) index--;
+        if (index > 0) index--;
 
         let action = actions[index];
 
@@ -85,14 +85,12 @@ export const GhostControl = {
         actions = BEST_ACTION;
         distances = BEST_DISTANCES;
         GhostControl.Reset();
-        
+
         // import JSON formatted data via GET request from the server.
-        GetWrapper( '/ghost-control-data',
-                    {}, /* possible optimization, have server just return data for 1 episode */
-                    (data) => {
-                        console.log('got ', data.length, ' episodes from server, storing episode ', episodeNumber);
-                        actions = data[episodeNumber].actions;
-                        distances = data[episodeNumber].position
-                    });
+        GetWrapper('/ghost-control-data', {} /* possible optimization, have server just return data for 1 episode */, (data) => {
+            console.log('got ', data.length, ' episodes from server, storing episode ', episodeNumber);
+            actions = data[episodeNumber].actions;
+            distances = data[episodeNumber].position;
+        });
     }
 };
