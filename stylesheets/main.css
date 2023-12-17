@@ -45,35 +45,31 @@
     border: 5px solid #222222;
 }
 #title {
-    /* font-size: 36px; */
     text-align: center;
     width: 100%;
 }
 #subtitle {
-    /* font-size: 10px; */
     text-align: center;
     width: 100%;
 }
 #inputframe{
     margin-left: 10%;
     margin-right: 10%;
-    height: 60px;
-    /* font-size: 36px; */
+    margin-bottom: 5vh;
+    margin-top: 15vh;
+    height: 20vh;
 }
 #username, #password {
-    height: 40px;
+    height: 7vh;
     width: 46%;
-    margin-top: 10px;
-    /* font-size: 36px; */
-    line-height: 60px;
     border: 5px solid #222222;
 }
 #login, #register {
+    height: 7vh;
     width: 80%;
     margin-left: 10%;
     margin-right: 10%;
-    margin-top: 10px;
-    /* font-size: 36px; */
+    margin-top: 5vh;
 }
 
 #message {
@@ -108,8 +104,8 @@ path {
 	shape-rendering: crispEdges;
 }
 .axis text {
-/* 	font-family: sans-serif; */
-	/* font-size: 10px; */
+	font-family: sans-serif;
+	font-size: 2.5vmin;
 }
 
 #results {

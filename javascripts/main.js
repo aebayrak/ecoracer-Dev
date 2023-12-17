@@ -1,9 +1,8 @@
 import * as MiniMap from './game-landscape.js';
-import * as submit from './submit.js';
+import * as server from './server.js';
 import { world, Chipmunk2DWorld } from './game-physics.js';
 import { GhostControl } from './ghost-control.js';
-import { Players, PlayerCredentials, Player } from './player.js';
-import { Battery } from './drivetrain-model.js';
+import { Players } from './player.js';
 import { initialize_design } from './design.js';
 import { GLOBALS } from './globals.js';
 
@@ -14,12 +13,13 @@ export const EcoRacerOptions = {
          * true -> login/register page
          * false -> intro/instructions page
          */
-        USE_LOGIN: false,
+        USE_LOGIN: true,
         /**
-         * @type {boolean}
-         * TODO: not hooked
+         * @type {boolean} Use canned server replies (for development and test)
+         * true -> server requests are converted to hardcoded responses
+         * false -> GET/POST requests are sent to the hosting server
          */
-        POST_RESULTS: false,
+        USE_CANNED_RESPONSES: true,
     },
     UI: {
         /**
@@ -42,44 +42,6 @@ export const EcoRacerOptions = {
         AI_CONTROL_EPISODE: null,
     },
 };
-
-/**
- * Function to perform login and update in-game user data.
- * Procedurally this:
- *  - takes credentials from the login screen
- *  - runs minimal checks on the value of user/password
- *  - attempts to login and pull saved user data from the server
- *  - updates in-game user data or displays an error
- * @param {string} username - if provided, the username to use, else username pulled from HTML form, or default value used.
- * @param {string} password - if provided, the password to use, else password pulled from HTML form, or default value used.
- */
-function UserLogin(username, password) {
-    let user = username;// || $('#username')[0].value || default_username; // only for development
-    let pass = password;// || $('#password')[0].value || default_password;
-
-    $.post('/getUser', { username: user, password: pass }, function (response) {
-        if (response === '') {
-            $('#message').html("User doesn't exist or password wrong.");
-            setTimeout(function () { $('#message').html(''); }, 1500);
-        } else {
-            let data = Players.HUMAN.serverData;
-            data.credentials = new PlayerCredentials(user, pass);
-            data.id = response.id;
-            data.name = response.name;
-            data.bestScore = response.bestscore;
-
-            let score = '--';
-            if (data.bestScore > 0) {
-                score = Battery.Consumption2Percentage(data.bestScore, 1)
-            }
-            $('#myscore').html('Best Score: ' + score + '%');
-        }
-    })
-    .fail(function(response){
-        $('#message').html("Server error: " + response.statusText);
-        setTimeout(function () { $('#message').html(''); }, 1500);
-    });
-}
 
 /**
  * Simple replacement for the jQuery-mobile page selector.
@@ -186,10 +148,10 @@ function GameLoop(highResTimerMillisec) {
     } else {
         if( world.playerFinished ){
             messagebox(world.message, true);
-            submit.submitResult(true, Players.HUMAN);
+            server.submitResult(true, Players.HUMAN);
         } else {
             messagebox(world.message, false);
-            submit.submitResult(false, Players.HUMAN);
+            server.submitResult(false, Players.HUMAN);
         }
     }
 }
@@ -226,14 +188,14 @@ function restart() {
     $('#messagebox').hide();
     $('#scorebox').hide();
     $('#history').html('');
-    submit.getBestScore();
+    server.getBestScore();
     historyDrawn = false;
     // TODO: this existing code (user login) is really heavy handed for updating the 
     // UI with the current best score. The UI should be updated for current best score 
     // when the game ends, even before submitting results to server.
     if(EcoRacerOptions.SERVER.USE_LOGIN && EcoRacerOptions.SERVER.POST_RESULTS){
         let creds = Players.HUMAN.serverData.credentials;
-        UserLogin(creds.username, creds.password);
+        server.UserLogin(creds.username, creds.password);
     }
     RunGame();
 }
@@ -248,21 +210,7 @@ $(function () {
         let user = $('#username')[0].value;
         let pass = $('#password')[0].value;
         if ((user != 'username') && (user != '') && (pass != 'password') && (pass != '')) {
-            $.post(
-                '/signup',
-                {
-                    username: user,
-                    password: pass
-                },
-                function () {
-                    // if signup succeeded, do an immediate login
-                    UserLogin(user, pass);
-                }
-            )
-            .fail(function(response){
-                $('#message').html("Server error: " + response.statusText);
-                setTimeout(function () { $('#message').html(''); }, 1500);
-            });
+            server.Signup(user, pass, () => {ChangePage('intro-page');});
         } else {
             $('#message').html('Username/password not allowed...');
             setTimeout(function () { $('#message').html(''); }, 1500);
@@ -273,7 +221,7 @@ $(function () {
         let user = $('#username')[0].value;
         let pass = $('#password')[0].value;
         if (user != 'username' && user != '') {
-            UserLogin(user, pass);
+            server.UserLogin(user, pass, () => {ChangePage('intro-page');});
         } else {
             $('#message').html('Username cannot be empty...');
             setTimeout(function () { $('#message').html(''); }, 1500);
@@ -368,7 +316,7 @@ $(function () {
     $('#review').on('tap click', function (event) {
         event.preventDefault();
         if (!historyDrawn) {
-            submit.drawHistory();
+            server.drawHistory();
             historyDrawn = true;
         }
         $('#history').show();
@@ -383,14 +331,13 @@ $(function () {
         $('#intro-page').hide(500, function () {
             $('#brake').removeClass('locked');
             $('#acc').removeClass('locked');
-            submit.getBestScore();
+            server.getBestScore();
             RunGame();
         });
     });
 
     $('#designbutton').on('tap click', function () {
         if( EcoRacerOptions.UI.ALLOW_GEAR_DESIGN){
-            // $('#design-page').show();
             FreezeGame();
             ChangePage('design-page');
             initialize_design();
@@ -400,7 +347,6 @@ $(function () {
         restart();
     });
     $('#designed').on('tap click', function () {
-        // $('#design-page').hide();
         $('#canvas_gear').empty();
         restart();
     });
